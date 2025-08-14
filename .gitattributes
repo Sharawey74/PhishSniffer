@@ -1,2 +1,8 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+/models/phishing_detector_model.joblib filter=lfs diff=lfs merge=lfs -text
+/resources/Enron.csv filter=lfs diff=lfs merge=lfs -text
+/resources/Ling.csv filter=lfs diff=lfs merge=lfs -text
+/resources/Nazario.csv filter=lfs diff=lfs merge=lfs -text
+/resources/Nigerian_Fraud.csv filter=lfs diff=lfs merge=lfs -text
+/resources/SpamAssasin.csv filter=lfs diff=lfs merge=lfs -text
