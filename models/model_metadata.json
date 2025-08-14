@@ -1,0 +1,14 @@
+{
+  "model_type": "Random Forest Classifier",
+  "version": "1.0.0",
+  "last_updated": "2025-07-24 01:55:49",
+  "features_used": 10,
+  "training_data_size": 43868,
+  "dataset_files": [
+    "CEAS_08.csv",
+    "Nigerian_Fraud.csv",
+    "Nazario.csv"
+  ],
+  "accuracy": "N/A (no validation performed)",
+  "created_by": "Lujain Hesham"
+}

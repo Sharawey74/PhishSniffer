@@ -1,0 +1,48 @@
+{
+  "features": {
+    "from": "Amazon Rewards <promo@amazon-prizes.club>",
+    "to": "",
+    "subject": "\ud83c\udf81 Congratulations! You\u2019ve Won a $500 Amazon Gift Card",
+    "date": "",
+    "return_path": "winner@amazon-prizes.club",
+    "reply_to": "claim@amazonfreegift.co",
+    "headers": {
+      "From": "Amazon Rewards <promo@amazon-prizes.club>",
+      "Reply-To": "claim@amazonfreegift.co",
+      "Return-Path": "winner@amazon-prizes.club",
+      "Subject": "\ud83c\udf81 Congratulations! You\u2019ve Won a $500 Amazon Gift Card"
+    },
+    "body": "Hello,\n\nYou\\u2019ve been selected to receive a $500 Amazon Gift Card. This offer is available for a limited time only.\n\nTo claim your reward, please click the link below:  \nhttps://bit.ly/3FreeReward\n\nAct now before the offer expires!\n\nSincerely,  \nAmazon Promotions Team",
+    "has_html": false,
+    "has_attachments": false,
+    "attachment_count": 0,
+    "sender_domain_mismatch": true,
+    "sender_has_numbers": false,
+    "sender_free_email": false,
+    "sender_suspicious_tld": true,
+    "sender_has_suspicious_words": false,
+    "sender_display_name_mismatch": false,
+    "sender_email": "promo@amazon-prizes.club",
+    "sender_display_name": "Amazon Rewards",
+    "sender_domain": "amazon-prizes.club",
+    "has_urls": true,
+    "url_count": 1,
+    "has_shortened_urls": true,
+    "has_ip_urls": false,
+    "has_suspicious_tlds": false,
+    "has_url_mismatch": false,
+    "urls": [
+      "https://bit.ly/3FreeReward"
+    ],
+    "subject_has_urgency": false,
+    "body_has_urgency": true,
+    "requests_sensitive_data": false,
+    "has_suspicious_claims": true,
+    "has_poor_grammar": false,
+    "has_threatening_language": false
+  },
+  "email_content": "From: Amazon Rewards <promo@amazon-prizes.club>\nReply-To: claim@amazonfreegift.co\nReturn-Path: winner@amazon-prizes.club\nSubject: \ud83c\udf81 Congratulations! You\u2019ve Won a $500 Amazon Gift Card\n\nHello,\n\nYou\u2019ve been selected to receive a $500 Amazon Gift Card. This offer is available for a limited time only.\n\nTo claim your reward, please click the link below:  \nhttps://bit.ly/3FreeReward\n\nAct now before the offer expires!\n\nSincerely,  \nAmazon Promotions Team",
+  "is_phishing": true,
+  "source": "manual input",
+  "timestamp": "2025-07-23 23:27:18"
+}

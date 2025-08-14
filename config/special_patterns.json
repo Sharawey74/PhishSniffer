@@ -1,0 +1,11 @@
+{
+  "patterns": [
+    {
+      "name": "amazon_gift_card_scam",
+      "subject_keywords": ["amazon", "gift card", "congratulations", "won"],
+      "domains": ["amazon-prizes.club", "amazonfreegift.co"],
+      "urls": ["bit.ly/3FreeReward"],
+      "always_phishing": true
+    }
+  ]
+}
