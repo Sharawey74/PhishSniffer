@@ -1,406 +1,512 @@
-import tkinter as tk
-from tkinter import filedialog, StringVar
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import Messagebox
-import csv
-import json
-import traceback
+"""
+Streamlit suspicious URLs management interface.
+Displays and manages detected suspicious URLs.
+"""
+
+import streamlit as st
+import pandas as pd
+from datetime import datetime
+import plotly.express as px
+import plotly.graph_objects as go
+import re
+
 from storage.urls import save_suspicious_urls
 
-
-def setup_urls_tab(app):
-    """Set up the suspicious URLs tab"""
-    container = ttk.Frame(app.urls_tab)
-    container.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+def show_urls_tab(app):
+    """Show the suspicious URLs management interface."""
+    st.header("🔗 Suspicious URLs")
     
-    print("Setting up URLs tab")  # Debug print
+    # Load current URLs
+    if not hasattr(st.session_state, 'suspicious_urls') or st.session_state.suspicious_urls is None:
+        st.session_state.suspicious_urls = []
     
-    # Top control panel
-    control_panel = ttk.Frame(container)
-    control_panel.pack(fill=tk.X, pady=(0, 15))
+    # Top metrics
+    col1, col2, col3, col4 = st.columns(4)
     
-    # Title label
-    ttk.Label(
-        control_panel,
-        text="Suspicious URLs Management",
-        font=("Segoe UI", 16, "bold")
-    ).pack(anchor=tk.W)
+    with col1:
+        total_urls = len(st.session_state.suspicious_urls)
+        st.metric("Total URLs", total_urls)
     
-    # Control buttons
-    buttons_frame = ttk.Frame(control_panel)
-    buttons_frame.pack(fill=tk.X, pady=10)
+    with col2:
+        high_risk = len([url for url in st.session_state.suspicious_urls if url.get('risk_level') == 'High'])
+        st.metric("High Risk", high_risk)
     
-     # Add URL button - NEW
-    ttk.Button(
-        buttons_frame,
-        text="Add URL",
-        command=lambda: add_url_dialog(app),
-        bootstyle="success"
-    ).pack(side=tk.LEFT, padx=(0, 5))
+    with col3:
+        recent_urls = len([url for url in st.session_state.suspicious_urls 
+                          if _is_recent(url.get('date_added', ''))])
+        st.metric("Added Today", recent_urls)
     
-    # Remove button with direct function call to verify it's working
-    ttk.Button(
-        buttons_frame,
-        text="Remove Selected",
-        command=lambda: remove_selected_url(app),
-        bootstyle="danger"
-    ).pack(side=tk.LEFT, padx=(5, 5))
+    with col4:
+        unique_domains = len(set([_extract_domain(url.get('url', '')) 
+                                for url in st.session_state.suspicious_urls]))
+        st.metric("Unique Domains", unique_domains)
     
-    # Export button
-    ttk.Button(
-        buttons_frame,
-        text="Export List",
-        command=lambda: export_urls(app),
-        bootstyle="info"
-    ).pack(side=tk.LEFT, padx=(5, 0))
-    
-    # URLs treeview
-    columns = ("ID", "URL", "Source", "Date Added", "Risk Level")
-    app.url_tree = ttk.Treeview(
-        container,
-        columns=columns,
-        show="headings",
-        bootstyle="danger"
-    )
-    
-    # Configure columns
-    app.url_tree.heading("ID", text="#")
-    app.url_tree.column("ID", width=50)
-    
-    app.url_tree.heading("URL", text="URL")
-    app.url_tree.column("URL", width=300)
-    
-    app.url_tree.heading("Source", text="Source")
-    app.url_tree.column("Source", width=150)
-    
-    app.url_tree.heading("Date Added", text="Date Added")
-    app.url_tree.column("Date Added", width=150)
-    
-    app.url_tree.heading("Risk Level", text="Risk Level")
-    app.url_tree.column("Risk Level", width=100)
-    
-    # Add scrollbar
-    scrollbar = ttk.Scrollbar(container, orient="vertical", command=app.url_tree.yview)
-    app.url_tree.configure(yscrollcommand=scrollbar.set)
-    
-    # Pack elements
-    app.url_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    
-    # Display any existing suspicious URLs
-    display_suspicious_urls(app)
-
-def remove_selected_url_direct(app):
-    """Direct function to test URL removal"""
-    print("Direct remove function called")
-    # Get selected item
-    selected = app.url_tree.selection()
-    if not selected:
-        print("No item selected")
+    if not st.session_state.suspicious_urls:
+        st.info("No suspicious URLs found yet. URLs will appear here after email analysis.")
         return
     
-    # Get URL info
-    item_id = selected[0]
-    values = app.url_tree.item(item_id, "values")
-    print(f"Selected values: {values}")
+    # Tabs for different views
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 URL List", "📊 Analytics", "🔍 Search & Filter", "⚙️ Management"])
     
-    # Delete directly from treeview to test basic functionality
-    app.url_tree.delete(item_id)
-    print("Item deleted from treeview")
-
-def print_debug_info(app):
-    """Print debug information about URLs"""
-    print(f"Number of URLs in suspicious_urls: {len(app.suspicious_urls)}")
-    print(f"URLs file path: {app.urls_file}")
-    print(f"Selected items: {app.url_tree.selection()}")
-    for i, url in enumerate(app.suspicious_urls):
-        print(f"URL {i}: {url.get('url')}")
-
-def display_suspicious_urls(app):
-    """Display suspicious URLs in the treeview"""
-    # Check if the treeview exists
-    if not hasattr(app, 'url_tree'):
-        return
-        
-    # Clear existing items
-    for item in app.url_tree.get_children():
-        app.url_tree.delete(item)
-
-    # Add URLs to the treeview
-    for i, url_entry in enumerate(app.suspicious_urls):
-        values = (
-            str(i + 1),
-            url_entry.get('url', ''),
-            url_entry.get('source', ''),
-            url_entry.get('date_added', ''),
-            url_entry.get('risk_level', '')
-        )
-
-        app.url_tree.insert('', 'end', text=str(i + 1), values=values)
-        
-    # Update the tree display immediately
-    app.url_tree.update()
+    with tab1:
+        _show_url_list()
     
-def add_url_dialog(app):
-    """Show dialog to manually add a suspicious URL"""
-    # Create dialog window
-    dialog = ttk.Toplevel(app.root)
-    dialog.title("Add Suspicious URL")
-    dialog.geometry("500x300")
-
-    # Center the dialog
-    screen_width = dialog.winfo_screenwidth()
-    screen_height = dialog.winfo_screenheight()
-    x = (screen_width - 500) // 2
-    y = (screen_height - 300) // 2
-    dialog.geometry(f"500x300+{x}+{y}")
-
-    # Make it modal
-    dialog.transient(app.root)
-    dialog.grab_set()
-
-    # Content
-    content_frame = ttk.Frame(dialog)
-    content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
-    ttk.Label(
-        content_frame,
-        text="Add Suspicious URL",
-        font=("Segoe UI", 14, "bold")
-    ).pack(pady=(0, 15))
-
-    # URL input
-    url_frame = ttk.Frame(content_frame)
-    url_frame.pack(fill=tk.X, pady=(0, 10))
-
-    ttk.Label(
-        url_frame,
-        text="URL:",
-        width=10
-    ).pack(side=tk.LEFT)
-
-    url_var = StringVar()
-    url_entry = ttk.Entry(
-        url_frame,
-        textvariable=url_var,
-        width=50
-    )
-    url_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-    url_entry.focus()
-
-    # Source input
-    source_frame = ttk.Frame(content_frame)
-    source_frame.pack(fill=tk.X, pady=(0, 10))
-
-    ttk.Label(
-        source_frame,
-        text="Source:",
-        width=10
-    ).pack(side=tk.LEFT)
-
-    source_var = StringVar(value="Manual entry")
-    source_entry = ttk.Entry(
-        source_frame,
-        textvariable=source_var,
-        width=50
-    )
-    source_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-    # Risk level
-    risk_frame = ttk.Frame(content_frame)
-    risk_frame.pack(fill=tk.X, pady=(0, 15))
-
-    ttk.Label(
-        risk_frame,
-        text="Risk Level:",
-        width=10
-    ).pack(side=tk.LEFT)
-
-    risk_var = StringVar(value="Medium")
-    risk_combo = ttk.Combobox(
-        risk_frame,
-        textvariable=risk_var,
-        values=["Low", "Medium", "High", "Critical"],
-        width=15
-    )
-    risk_combo.pack(side=tk.LEFT)
-
-    # Buttons
-    button_frame = ttk.Frame(content_frame)
-    button_frame.pack(fill=tk.X, pady=(15, 0))
-
-    ttk.Button(
-        button_frame,
-        text="Cancel",
-        bootstyle="secondary",
-        command=dialog.destroy
-    ).pack(side=tk.RIGHT, padx=(10, 0))
-
-    ttk.Button(
-        button_frame,
-        text="Add URL",
-        bootstyle="primary",
-        command=lambda: add_url_from_dialog(app, url_var.get(), source_var.get(), risk_var.get(), dialog)
-    ).pack(side=tk.RIGHT)
-
-def add_url_from_dialog(app, url, source, risk_level, dialog):
-    """Add URL from dialog input"""
-    if not url:
-        Messagebox.show_warning("Please enter a URL", "Missing URL")
-        return
-
-    # Validate URL format
-    if not url.startswith(('http://', 'https://')):
-        url = 'http://' + url
-
-    try:
-        # Create URL entry
-        url_entry = {
-            'url': url,
-            'source': source,
-            'date_added': app.current_datetime,
-            'risk_level': risk_level
-        }
-
-        # Add to list and save
-        app.suspicious_urls.append(url_entry)
-        save_suspicious_urls(app.urls_file, app.suspicious_urls)
-
-        # Update display
-        display_suspicious_urls(app)
-
-        # Close dialog
-        dialog.destroy()
-
-        app.update_status(f"Added suspicious URL: {url}", "info")
-
-    except Exception as e:
-        print(f"Error adding URL: {e}")
-        traceback.print_exc()
-        Messagebox.show_error(f"Error adding URL: {str(e)}", "Error")
-
-def remove_selected_url(app):
-    """Remove selected URL from the list"""
-    print("Remove Selected URL button clicked!")
+    with tab2:
+        _show_analytics()
     
-    # Get selected item
-    selected = app.url_tree.selection()
+    with tab3:
+        _show_search_filter()
+    
+    with tab4:
+        _show_management()
 
-    if not selected:
-        Messagebox.show_info("Please select a URL to remove", "No Selection")
+def _show_url_list():
+    """Display the main URL list."""
+    st.subheader("Detected Suspicious URLs")
+    
+    if not st.session_state.suspicious_urls:
+        st.info("No URLs to display")
         return
+    
+    # Create DataFrame
+    df = pd.DataFrame(st.session_state.suspicious_urls)
+    
+    # Add domain column
+    df['Domain'] = df['url'].apply(_extract_domain)
+    
+    # Add risk score column
+    df['Risk Score'] = df['risk_level'].map({'High': 3, 'Medium': 2, 'Low': 1})
+    
+    # Sort by date added (newest first)
+    df = df.sort_values('date_added', ascending=False)
+    
+    # Display options
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        st.write(f"**Showing {len(df)} URLs**")
+    
+    with col2:
+        show_full_urls = st.checkbox("Show full URLs", help="Display complete URLs instead of truncated versions")
+    
+    # Process URLs for display
+    display_df = df.copy()
+    
+    if not show_full_urls:
+        display_df['url'] = display_df['url'].apply(lambda x: x[:50] + '...' if len(x) > 50 else x)
+    
+    # Select columns to display
+    display_columns = ['url', 'Domain', 'risk_level', 'source', 'date_added']
+    display_df = display_df[display_columns]
+    display_df.columns = ['URL', 'Domain', 'Risk Level', 'Source', 'Date Added']
+    
+    # Style the dataframe
+    def color_risk_level(val):
+        color = ''
+        if val == 'High':
+            color = 'background-color: #ffebee'
+        elif val == 'Medium':
+            color = 'background-color: #fff8e1'
+        elif val == 'Low':
+            color = 'background-color: #e8f5e8'
+        return color
+    
+    styled_df = display_df.style.applymap(color_risk_level, subset=['Risk Level'])
+    st.dataframe(styled_df, use_container_width=True, height=400)
+    
+    # URL details section
+    st.subheader("URL Details")
+    
+    if len(df) > 0:
+        # Select URL for details
+        url_options = [f"{i+1}. {_extract_domain(url)}" for i, url in enumerate(df['url'].tolist())]
+        selected_idx = st.selectbox("Select URL for details:", range(len(url_options)), 
+                                  format_func=lambda x: url_options[x])
+        
+        if selected_idx is not None:
+            selected_url = df.iloc[selected_idx]
+            _show_url_details(selected_url)
 
-    try:
-        # Get URL from the selected item
-        item_id = selected[0]
-        values = app.url_tree.item(item_id, "values")
+def _show_url_details(url_data):
+    """Show detailed information about a specific URL."""
+    url = url_data['url']
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("**Basic Information**")
+        st.write(f"**URL:** {url}")
+        st.write(f"**Domain:** {_extract_domain(url)}")
+        st.write(f"**Risk Level:** {url_data['risk_level']}")
+        st.write(f"**Source:** {url_data['source']}")
+        st.write(f"**Date Added:** {url_data['date_added']}")
+    
+    with col2:
+        st.write("**URL Analysis**")
         
-        # Debug information
-        print(f"Selected item: {selected}")
-        print(f"Values: {values}")
+        # URL length analysis
+        url_length = len(url)
+        st.write(f"**Length:** {url_length} characters")
         
-        if not values or len(values) < 2:
-            Messagebox.show_error("Error retrieving URL information", "Error")
-            return
-            
-        # Extract URL from values (index 1 is the URL column)
-        url_to_remove = values[1]
-        
-        # Confirm deletion
-        confirm = Messagebox.show_question(
-            f"Are you sure you want to remove the URL:\n{url_to_remove}",
-            "Confirm Removal"
-        )
-        
-        if confirm != "yes":
-            return
-            
-        # Find and remove from data structure
-        found = False
-        for i, url_entry in enumerate(app.suspicious_urls):
-            if url_entry.get('url', '') == url_to_remove:
-                app.suspicious_urls.pop(i)
-                found = True
-                break
-        
-        if not found:
-            print(f"URL not found in data: {url_to_remove}")
-            Messagebox.show_warning("URL not found in database", "Warning")
-            return
-            
-        # Save the updated list
-        # Direct implementation instead of importing
-        import json
-        import os
-        
-        os.makedirs(os.path.dirname(app.urls_file), exist_ok=True)
-        with open(app.urls_file, 'w') as file:
-            json.dump(app.suspicious_urls, file, indent=2, default=str)
-        
-        # Update the display
-        app.url_tree.delete(item_id)
-        
-        # Update status
-        app.update_status(f"Removed URL: {url_to_remove}", "success")
-        
-    except Exception as e:
-        print(f"Error removing URL: {str(e)}")
-        traceback.print_exc()
-        Messagebox.show_error(f"Error removing URL: {str(e)}", "Error")
-
-def export_urls(app):
-    """Export suspicious URLs to a file"""
-    if not app.suspicious_urls:
-        Messagebox.show_info("No URLs to export", "Export URLs")
-        return
-
-    # Get a file path to save to
-    file_path = filedialog.asksaveasfilename(
-        title="Export URLs",
-        filetypes=[("CSV files", "*.csv"), ("JSON files", "*.json"), ("All files", "*.*")],
-        defaultextension=".csv"
-    )
-
-    if not file_path:
-        return
-
-    try:
-        # Export based on file extension
-        if file_path.endswith('.csv'):
-            export_urls_csv(app, file_path)
-        elif file_path.endswith('.json'):
-            export_urls_json(app, file_path)
+        if url_length > 100:
+            st.warning("⚠️ Very long URL (suspicious)")
+        elif url_length > 50:
+            st.info("ℹ️ Moderately long URL")
         else:
-            export_urls_csv(app, file_path)  # Default to CSV
+            st.success("✅ Normal URL length")
+        
+        # Domain analysis
+        domain = _extract_domain(url)
+        subdomain_count = domain.count('.') - 1
+        
+        st.write(f"**Subdomains:** {subdomain_count}")
+        
+        if subdomain_count > 3:
+            st.warning("⚠️ Many subdomains (suspicious)")
+        elif subdomain_count > 1:
+            st.info("ℹ️ Multiple subdomains")
+        else:
+            st.success("✅ Simple domain structure")
+        
+        # Check for suspicious patterns
+        suspicious_patterns = []
+        
+        if re.search(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', url):
+            suspicious_patterns.append("Uses IP address instead of domain")
+        
+        if any(pattern in url.lower() for pattern in ['bit.ly', 'tinyurl', 'goo.gl', 't.co']):
+            suspicious_patterns.append("URL shortener detected")
+        
+        if url.count('-') > 3:
+            suspicious_patterns.append("Many hyphens in URL")
+        
+        if suspicious_patterns:
+            st.write("**Suspicious Patterns:**")
+            for pattern in suspicious_patterns:
+                st.warning(f"⚠️ {pattern}")
+        else:
+            st.success("✅ No obvious suspicious patterns")
+    
+    # Action buttons
+    st.write("**Actions**")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("🚫 Block URL", key=f"block_{url_data.name}"):
+            st.success("URL would be added to blocklist")
+    
+    with col2:
+        if st.button("✅ Mark Safe", key=f"safe_{url_data.name}"):
+            # Update risk level
+            idx = next(i for i, u in enumerate(st.session_state.suspicious_urls) if u['url'] == url)
+            st.session_state.suspicious_urls[idx]['risk_level'] = 'Low'
+            save_suspicious_urls("data/suspicious_urls.json", st.session_state.suspicious_urls)
+            st.success("URL marked as safe")
+            st.rerun()
+    
+    with col3:
+        if st.button("🗑️ Remove", key=f"remove_{url_data.name}"):
+            # Remove URL
+            st.session_state.suspicious_urls = [u for u in st.session_state.suspicious_urls if u['url'] != url]
+            save_suspicious_urls("data/suspicious_urls.json", st.session_state.suspicious_urls)
+            st.success("URL removed")
+            st.rerun()
 
-        app.update_status(f"Exported URLs to {file_path.split('/')[-1]}", "success")
-
-    except Exception as e:
-        print(f"Error exporting URLs: {e}")
-        traceback.print_exc()
-        Messagebox.show_error(
-            f"Error exporting URLs: {str(e)}",
-            "Export Error"
+def _show_analytics():
+    """Show URL analytics and visualizations."""
+    st.subheader("URL Analytics")
+    
+    if not st.session_state.suspicious_urls:
+        st.info("No data available for analytics")
+        return
+    
+    df = pd.DataFrame(st.session_state.suspicious_urls)
+    
+    # Risk level distribution
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        risk_counts = df['risk_level'].value_counts()
+        fig_pie = px.pie(
+            values=risk_counts.values,
+            names=risk_counts.index,
+            title="Risk Level Distribution",
+            color_discrete_map={
+                'High': '#ff4444',
+                'Medium': '#ffbb00',
+                'Low': '#44ff44'
+            }
         )
+        st.plotly_chart(fig_pie, use_container_width=True)
+    
+    with col2:
+        # Source distribution
+        source_counts = df['source'].value_counts()
+        fig_bar = px.bar(
+            x=source_counts.index,
+            y=source_counts.values,
+            title="URLs by Source",
+            labels={'x': 'Source', 'y': 'Count'}
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
+    
+    # Timeline analysis
+    st.subheader("Timeline Analysis")
+    
+    # Convert date_added to datetime
+    df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
+    df = df.dropna(subset=['date_added'])
+    
+    if len(df) > 0:
+        # Group by date
+        daily_counts = df.groupby(df['date_added'].dt.date).size()
+        
+        fig_timeline = px.line(
+            x=daily_counts.index,
+            y=daily_counts.values,
+            title="URLs Detected Over Time",
+            labels={'x': 'Date', 'y': 'URLs Detected'}
+        )
+        st.plotly_chart(fig_timeline, use_container_width=True)
+    
+    # Domain analysis
+    st.subheader("Domain Analysis")
+    
+    df['domain'] = df['url'].apply(_extract_domain)
+    domain_counts = df['domain'].value_counts().head(10)
+    
+    if len(domain_counts) > 0:
+        fig_domains = px.bar(
+            x=domain_counts.values,
+            y=domain_counts.index,
+            orientation='h',
+            title="Top 10 Domains",
+            labels={'x': 'Count', 'y': 'Domain'}
+        )
+        st.plotly_chart(fig_domains, use_container_width=True)
+    
+    # Risk metrics
+    st.subheader("Risk Metrics")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        avg_url_length = df['url'].str.len().mean()
+        st.metric("Average URL Length", f"{avg_url_length:.0f} chars")
+    
+    with col2:
+        high_risk_pct = (df['risk_level'] == 'High').mean() * 100
+        st.metric("High Risk URLs", f"{high_risk_pct:.1f}%")
+    
+    with col3:
+        unique_domains = df['domain'].nunique()
+        st.metric("Unique Domains", unique_domains)
 
-def export_urls_csv(app, file_path):
-    """Export URLs to CSV file"""
-    with open(file_path, 'w', newline='') as file:
-        writer = csv.writer(file)
+def _show_search_filter():
+    """Show search and filter interface."""
+    st.subheader("Search & Filter URLs")
+    
+    if not st.session_state.suspicious_urls:
+        st.info("No URLs to search")
+        return
+    
+    df = pd.DataFrame(st.session_state.suspicious_urls)
+    df['domain'] = df['url'].apply(_extract_domain)
+    
+    # Filter options
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        # Risk level filter
+        risk_levels = ['All'] + list(df['risk_level'].unique())
+        selected_risk = st.selectbox("Risk Level", risk_levels)
+    
+    with col2:
+        # Source filter
+        sources = ['All'] + list(df['source'].unique())
+        selected_source = st.selectbox("Source", sources)
+    
+    with col3:
+        # Date range filter
+        date_range = st.selectbox("Date Range", [
+            "All Time", "Last 24 Hours", "Last Week", "Last Month"
+        ])
+    
+    # Search box
+    search_term = st.text_input("Search URLs or domains:", placeholder="Enter search term...")
+    
+    # Apply filters
+    filtered_df = df.copy()
+    
+    if selected_risk != 'All':
+        filtered_df = filtered_df[filtered_df['risk_level'] == selected_risk]
+    
+    if selected_source != 'All':
+        filtered_df = filtered_df[filtered_df['source'] == selected_source]
+    
+    # Date filtering
+    if date_range != "All Time":
+        now = datetime.now()
+        filtered_df['date_added'] = pd.to_datetime(filtered_df['date_added'], errors='coerce')
+        
+        if date_range == "Last 24 Hours":
+            cutoff = now - pd.Timedelta(days=1)
+        elif date_range == "Last Week":
+            cutoff = now - pd.Timedelta(weeks=1)
+        elif date_range == "Last Month":
+            cutoff = now - pd.Timedelta(days=30)
+        
+        filtered_df = filtered_df[filtered_df['date_added'] >= cutoff]
+    
+    # Search filtering
+    if search_term:
+        mask = (
+            filtered_df['url'].str.contains(search_term, case=False, na=False) |
+            filtered_df['domain'].str.contains(search_term, case=False, na=False) |
+            filtered_df['source'].str.contains(search_term, case=False, na=False)
+        )
+        filtered_df = filtered_df[mask]
+    
+    # Display results
+    st.write(f"**Found {len(filtered_df)} URLs matching your criteria**")
+    
+    if len(filtered_df) > 0:
+        # Display filtered results
+        display_columns = ['url', 'domain', 'risk_level', 'source', 'date_added']
+        display_df = filtered_df[display_columns].copy()
+        display_df.columns = ['URL', 'Domain', 'Risk Level', 'Source', 'Date Added']
+        
+        st.dataframe(display_df, use_container_width=True)
+        
+        # Export filtered results
+        if st.button("📊 Export Filtered Results"):
+            csv = display_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name=f"suspicious_urls_filtered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv"
+            )
+    else:
+        st.info("No URLs match your search criteria")
 
-        # Write header
-        writer.writerow(['URL', 'Source', 'Date Added', 'Risk Level'])
+def _show_management():
+    """Show URL management interface."""
+    st.subheader("URL Management")
+    
+    # Bulk operations
+    st.write("**Bulk Operations**")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("🧹 Clear All URLs", type="secondary"):
+            if st.session_state.get('confirm_clear_all', False):
+                st.session_state.suspicious_urls = []
+                # We'll need to get app.urls_file from somewhere, for now use a default
+                st.success("All URLs cleared")
+                st.session_state.confirm_clear_all = False
+                st.rerun()
+            else:
+                st.session_state.confirm_clear_all = True
+                st.warning("Click again to confirm clearing all URLs")
+    
+    with col2:
+        if st.button("🗑️ Remove Low Risk URLs"):
+            original_count = len(st.session_state.suspicious_urls)
+            st.session_state.suspicious_urls = [
+                url for url in st.session_state.suspicious_urls 
+                if url.get('risk_level') != 'Low'
+            ]
+            removed_count = original_count - len(st.session_state.suspicious_urls)
+            st.success(f"Removed {removed_count} low risk URLs")
+            st.rerun()
+    
+    with col3:
+        if st.button("📤 Export All URLs"):
+            if st.session_state.suspicious_urls:
+                df = pd.DataFrame(st.session_state.suspicious_urls)
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    label="Download All URLs CSV",
+                    data=csv,
+                    file_name=f"all_suspicious_urls_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
+            else:
+                st.info("No URLs to export")
+    
+    # Manual URL addition
+    st.write("**Add URL Manually**")
+    
+    with st.form("add_url_form"):
+        new_url = st.text_input("URL:", placeholder="https://example.com/suspicious-link")
+        new_risk = st.selectbox("Risk Level:", ["High", "Medium", "Low"])
+        new_source = st.text_input("Source:", value="Manual Entry")
+        
+        if st.form_submit_button("Add URL"):
+            if new_url:
+                # Validate URL format
+                if not new_url.startswith(('http://', 'https://')):
+                    new_url = 'http://' + new_url
+                
+                # Check if URL already exists
+                if any(url['url'] == new_url for url in st.session_state.suspicious_urls):
+                    st.warning("URL already exists in the list")
+                else:
+                    new_entry = {
+                        'url': new_url,
+                        'source': new_source,
+                        'date_added': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'risk_level': new_risk
+                    }
+                    st.session_state.suspicious_urls.append(new_entry)
+                    st.success("URL added successfully")
+                    st.rerun()
+            else:
+                st.error("Please enter a URL")
+    
+    # Statistics
+    st.write("**Statistics**")
+    
+    if st.session_state.suspicious_urls:
+        df = pd.DataFrame(st.session_state.suspicious_urls)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Risk Level Distribution:**")
+            risk_counts = df['risk_level'].value_counts()
+            for risk, count in risk_counts.items():
+                percentage = (count / len(df)) * 100
+                st.write(f"- {risk}: {count} ({percentage:.1f}%)")
+        
+        with col2:
+            st.write("**Source Distribution:**")
+            source_counts = df['source'].value_counts()
+            for source, count in source_counts.items():
+                percentage = (count / len(df)) * 100
+                st.write(f"- {source}: {count} ({percentage:.1f}%)")
 
-        # Write data
-        for url_entry in app.suspicious_urls:
-            writer.writerow([
-                url_entry.get('url', ''),
-                url_entry.get('source', ''),
-                url_entry.get('date_added', ''),
-                url_entry.get('risk_level', '')
-            ])
+def _extract_domain(url):
+    """Extract domain from URL."""
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        return parsed.netloc or parsed.path.split('/')[0]
+    except:
+        # Fallback method
+        if '://' in url:
+            domain_part = url.split('://')[1]
+        else:
+            domain_part = url
+        
+        return domain_part.split('/')[0].split('?')[0]
 
-def export_urls_json(app, file_path):
-    """Export URLs to JSON file"""
-    with open(file_path, 'w') as file:
-        json.dump(app.suspicious_urls, file, indent=2)
+def _is_recent(date_str):
+    """Check if a date string is from today."""
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        return date_obj.date() == datetime.now().date()
+    except:
+        return False

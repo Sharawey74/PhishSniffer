@@ -46,5 +46,71 @@
     "source": "manual input",
     "date_added": "2025-07-23 23:27:18",
     "risk_level": "High"
+  },
+  {
+    "url": "https://accounts.spotify.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://itunes.apple.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://play.google.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://www.spotify.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://www.spotif",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "http://www.w3.org",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://wl.spotify.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "http://messa",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://ac",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "http://message-editor.scdn.co",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://wl.",
+    "source": "email analysis",
+    "date_added": "2025-08-17 16:58:11",
+    "risk_level": "High"
   }
 ]

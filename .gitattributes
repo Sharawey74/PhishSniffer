@@ -6,3 +6,15 @@
 /resources/Nazario.csv filter=lfs diff=lfs merge=lfs -text
 /resources/Nigerian_Fraud.csv filter=lfs diff=lfs merge=lfs -text
 /resources/SpamAssasin.csv filter=lfs diff=lfs merge=lfs -text
+/cleaned_data/analysis_data.csv filter=lfs diff=lfs merge=lfs -text
+/cleaned_data/processed_emails.csv filter=lfs diff=lfs merge=lfs -text
+/cleaned_data/test_data.csv filter=lfs diff=lfs merge=lfs -text
+/cleaned_data/train_data.csv filter=lfs diff=lfs merge=lfs -text
+/data/CEAS_08.csv filter=lfs diff=lfs merge=lfs -text
+/data/Enron.csv filter=lfs diff=lfs merge=lfs -text
+/data/Ling.csv filter=lfs diff=lfs merge=lfs -text
+/data/Nazario.csv filter=lfs diff=lfs merge=lfs -text
+/data/Nigerian_Fraud.csv filter=lfs diff=lfs merge=lfs -text
+/data/SpamAssasin.csv filter=lfs diff=lfs merge=lfs -text
+/trained_models/random_forest_20250817_035020.joblib filter=lfs diff=lfs merge=lfs -text
+/trained_models/random_forest_20250817_035020_feature_extractor.joblib filter=lfs diff=lfs merge=lfs -text

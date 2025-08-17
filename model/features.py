@@ -1,8 +1,267 @@
+"""
+Feature extraction for        self.tfidf_vectorizer = TfidfVectorizer(
+            max_features=max_features,
+            ngram_range=ngram_range,
+            min_df=1,  # Changed from min_df to avoid pruning all terms
+            max_df=max_df,
+            stop_words='english',
+            lowercase=True,
+            strip_accents='unicode'
+        )
+        
+        self.count_vectorizer = CountVectorizer(
+            max_features=max_features,
+            ngram_range=ngram_range,
+            min_df=1,  # Changed from min_df to avoid pruning all terms
+            max_df=max_df,
+            stop_words='english',
+            lowercase=True,
+            strip_accents='unicode'
+        )ection.
+Extracts TF-IDF features, n-grams, and email-specific features.
+"""
+
 import re
 import urllib.parse
 import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import Pipeline
+import nltk
+from nltk.corpus import stopwords
+import warnings
+warnings.filterwarnings('ignore')
 
+class EmailFeatureExtractor:
+    """Comprehensive feature extraction for email classification."""
+    
+    def __init__(self, max_features=10000, ngram_range=(1, 2), min_df=2, max_df=0.95):
+        self.max_features = max_features
+        self.ngram_range = ngram_range
+        self.min_df = min_df
+        self.max_df = max_df
+        
+        # Initialize vectorizers
+        self.tfidf_vectorizer = TfidfVectorizer(
+            max_features=max_features,
+            ngram_range=ngram_range,
+            min_df=min_df,
+            max_df=max_df,
+            stop_words='english',
+            lowercase=True,
+            strip_accents='unicode'
+        )
+        
+        self.count_vectorizer = CountVectorizer(
+            max_features=max_features//2,
+            ngram_range=ngram_range,
+            min_df=min_df,
+            max_df=max_df,
+            stop_words='english',
+            lowercase=True,
+            strip_accents='unicode'
+        )
+        
+        # Dimensionality reduction - ensure minimum components
+        svd_components = min(100, max_features//10, 50)  # Cap at 50 components
+        svd_components = max(svd_components, 2)  # Ensure at least 2 components
+        self.svd = TruncatedSVD(n_components=svd_components, random_state=42)
+        
+        self.fitted = False
+        self.use_svd = True  # Flag to track if SVD is usable
+    
+    def fit(self, texts):
+        """Fit the feature extractors on the training data."""
+        print("Fitting TF-IDF vectorizer...")
+        self.tfidf_vectorizer.fit(texts)
+        
+        print("Fitting Count vectorizer...")
+        self.count_vectorizer.fit(texts)
+        
+        # Fit SVD on TF-IDF features
+        print("Fitting SVD for dimensionality reduction...")
+        tfidf_features = self.tfidf_vectorizer.transform(texts)
+        
+        # Only fit SVD if we have enough features
+        if tfidf_features.shape[1] >= 2:
+            # Adjust SVD components based on actual feature count
+            actual_components = min(self.svd.n_components, tfidf_features.shape[1] - 1)
+            self.svd.n_components = max(actual_components, 2)
+            self.svd.fit(tfidf_features)
+            self.use_svd = True
+        else:
+            print("⚠️ Not enough features for SVD, skipping dimensionality reduction")
+            self.use_svd = False
+        
+        self.fitted = True
+        print("✓ Feature extractors fitted successfully")
+        
+        return self
+    
+    def transform(self, texts):
+        """Transform texts into feature vectors."""
+        if not self.fitted:
+            raise ValueError("Feature extractors must be fitted before transform")
+        
+        print("Extracting TF-IDF features...")
+        tfidf_features = self.tfidf_vectorizer.transform(texts)
+        
+        print("Extracting Count features...")
+        count_features = self.count_vectorizer.transform(texts)
+        
+        print("Applying SVD transformation...")
+        if self.use_svd:
+            svd_features = self.svd.transform(tfidf_features)
+        else:
+            # Use original TF-IDF features if SVD is not available
+            svd_features = tfidf_features.toarray()[:, :min(10, tfidf_features.shape[1])]
+        
+        print("Extracting email-specific features...")
+        email_features = self._extract_email_features(texts)
+        
+        # Combine all features
+        print("Combining feature vectors...")
+        combined_features = np.hstack([
+            tfidf_features.toarray(),
+            count_features.toarray(),
+            svd_features,
+            email_features
+        ])
+        
+        print(f"✓ Generated feature matrix: {combined_features.shape}")
+        return combined_features
+    
+    def fit_transform(self, texts):
+        """Fit and transform in one step."""
+        return self.fit(texts).transform(texts)
+    
+    def _extract_email_features(self, texts):
+        """Extract email-specific features."""
+        features = []
+        
+        for text in texts:
+            text_features = self._get_text_features(str(text))
+            features.append(text_features)
+        
+        return np.array(features)
+    
+    def _get_text_features(self, text):
+        """Extract numerical features from text."""
+        if pd.isna(text) or text == "":
+            return np.zeros(20)  # Return zero vector for empty text
+        
+        text = str(text).lower()
+        
+        # Initialize feature vector
+        features = []
+        
+        # 1. Basic text statistics
+        features.append(len(text))  # Text length
+        features.append(len(text.split()))  # Word count
+        features.append(len([c for c in text if c.isalpha()]))  # Character count
+        features.append(len([c for c in text if c.isupper()]))  # Uppercase count
+        features.append(text.count('!'))  # Exclamation marks
+        features.append(text.count('?'))  # Question marks
+        features.append(text.count('$'))  # Dollar signs
+        
+        # 2. URL features
+        url_pattern = r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
+        urls = re.findall(url_pattern, text)
+        features.append(len(urls))  # URL count
+        features.append(int(any('bit.ly' in url or 'tinyurl' in url for url in urls)))  # Shortened URLs
+        features.append(int(bool(re.search(r'https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', text))))  # IP URLs
+        
+        # 3. Suspicious keywords
+        urgency_words = ['urgent', 'immediately', 'alert', 'expires', 'act now', 'limited time']
+        features.append(sum(text.count(word) for word in urgency_words))
+        
+        sensitive_words = ['password', 'credit card', 'ssn', 'login', 'bank account']
+        features.append(sum(text.count(word) for word in sensitive_words))
+        
+        money_words = ['money', 'payment', 'transfer', 'cash', 'prize', 'reward']
+        features.append(sum(text.count(word) for word in money_words))
+        
+        threat_words = ['suspended', 'terminated', 'unauthorized', 'closed', 'fraud']
+        features.append(sum(text.count(word) for word in threat_words))
+        
+        # 4. Email structure features
+        features.append(text.count('@'))  # Email addresses
+        features.append(text.count('http'))  # HTTP mentions
+        features.append(text.count('www'))  # WWW mentions
+        
+        # 5. Linguistic features
+        features.append(len([word for word in text.split() if len(word) > 10]))  # Long words
+        features.append(text.count(' '))  # Space count (indicator of text density)
+        features.append(len(set(text.split())))  # Unique words
+        
+        return np.array(features, dtype=float)
+    
+    def get_feature_names(self):
+        """Get names of all features."""
+        if not self.fitted:
+            return None
+        
+        feature_names = []
+        
+        # TF-IDF feature names
+        tfidf_names = [f"tfidf_{name}" for name in self.tfidf_vectorizer.get_feature_names_out()]
+        feature_names.extend(tfidf_names)
+        
+        # Count feature names
+        count_names = [f"count_{name}" for name in self.count_vectorizer.get_feature_names_out()]
+        feature_names.extend(count_names)
+        
+        # SVD feature names
+        svd_names = [f"svd_{i}" for i in range(self.svd.n_components)]
+        feature_names.extend(svd_names)
+        
+        # Email-specific feature names
+        email_feature_names = [
+            'text_length', 'word_count', 'char_count', 'uppercase_count',
+            'exclamation_count', 'question_count', 'dollar_count',
+            'url_count', 'shortened_url', 'ip_url',
+            'urgency_words', 'sensitive_words', 'money_words', 'threat_words',
+            'email_addresses', 'http_mentions', 'www_mentions',
+            'long_words', 'space_count', 'unique_words'
+        ]
+        feature_names.extend(email_feature_names)
+        
+        return feature_names
+
+# Legacy functions for backward compatibility
+# Legacy functions for backward compatibility
 def analyze_sender(email_features):
+    """Legacy function - analyze sender information for suspicious indicators"""
+    sender_features = {}
+
+    from_address = email_features.get('from', '')
+    reply_to = email_features.get('reply_to', '')
+    return_path = email_features.get('return_path', '')
+
+    # Extract email addresses with regex
+    from_email = extract_email_address(from_address)
+    reply_to_email = extract_email_address(reply_to)
+    return_path_email = extract_email_address(return_path)
+
+    # Check for suspicious sender patterns
+    sender_features['sender_domain_mismatch'] = check_domain_mismatch(from_email, reply_to_email,
+                                                                   return_path_email)
+    sender_features['sender_has_numbers'] = bool(re.search(r'\d{3,}', from_email))
+    sender_features['sender_free_email'] = is_free_email_provider(from_email)
+    sender_features['sender_suspicious_tld'] = has_suspicious_tld(from_email)
+    sender_features['sender_has_suspicious_words'] = has_suspicious_sender_words(from_address)
+
+    # Check display name vs email address
+    display_name = extract_display_name(from_address)
+    sender_features['sender_display_name_mismatch'] = check_display_name_mismatch(display_name, from_email)
+
+    # Store raw values
+    sender_features['sender_email'] = from_email
+    sender_features['sender_display_name'] = display_name
+    sender_features['sender_domain'] = extract_domain(from_email)
+
+    return sender_features
     """Analyze sender information for suspicious indicators"""
     sender_features = {}
 

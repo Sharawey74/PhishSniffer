@@ -1,0 +1,10 @@
+{
+  "model_type": "random_forest",
+  "model_name": "random_forest_20250817_035020",
+  "timestamp": "2025-08-17T03:50:20.986079",
+  "training_samples": 34284,
+  "test_samples": 8571,
+  "feature_count": 7570,
+  "train_accuracy": 0.9997666549994166,
+  "test_accuracy": 0.9773655349434138
+}

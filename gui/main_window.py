@@ -1,185 +1,145 @@
-import tkinter as tk
-from tkinter import StringVar
-import ttkbootstrap as ttk
-import os
-import threading
-import time
-from datetime import datetime
+"""
+Main Streamlit application for phishing email detection.
+Replaces the tkinter GUI with a modern web-based interface.
+"""
 
-from gui.splash_screen import show_splash
-from gui.analyze_tab import setup_analyze_tab
-from gui.report_tab import setup_report_tab
-from gui.urls_tab import setup_urls_tab, display_suspicious_urls
-from gui.settings_tab import setup_settings_tab
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime
+import os
+import sys
+
+# Add project root to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from model.predict import PhishingPredictor
+from storage.history import load_analysis_history, update_analysis_history
 from storage.urls import load_suspicious_urls, save_suspicious_urls
-from model.training import train_custom_model
-from storage.history import load_analysis_history
 
 class PhishingDetectorApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Phishing Email Detector")
-        self.root.geometry("1000x700")
-        self.style = ttk.Style("darkly")  # Modern dark theme
-
-        # Initialize data structures
-        self.suspicious_urls = []
-        self.analysis_results = None
-        self.current_email = None
-        self.features_dict = {}
-        self.loaded_model = None
-        self.model_metadata = {}
-
-        # Define file paths
-        self.app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.data_dir = os.path.join(self.app_dir, "data")
-        self.urls_file = os.path.join(self.data_dir, "suspicious_urls.json")
-        self.models_dir = os.path.join(self.app_dir, "models")
-        self.history_file = os.path.join(self.data_dir, "analysis_history.json")
-
-        # Ensure directories exist
-        os.makedirs(self.data_dir, exist_ok=True)
-        os.makedirs(self.models_dir, exist_ok=True)
-
-        # Current user and datetime
-        self.current_user = "Lujain Hesham"
-        self.current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        # Load suspicious URLs from file
-        self.suspicious_urls = load_suspicious_urls(self.urls_file)
-
-        # Store the root to hide it during splash screen
-        self.root.withdraw()
-
-        # Launch splash screen
-        show_splash(self)
-
-    def setup_main_ui(self):
-        """Set up the main application UI after splash screen"""
-        try:
-            # Create header with app title and user info
-            self.create_header()
-
-            # Create a notebook for tabs
-            self.tab_control = ttk.Notebook(self.root)
-
-            # Create the tabs
-            self.analyze_tab = ttk.Frame(self.tab_control)
-            self.report_tab = ttk.Frame(self.tab_control)
-            self.urls_tab = ttk.Frame(self.tab_control)
-            self.settings_tab = ttk.Frame(self.tab_control)
-
-            # Add tabs to notebook with icons
-            self.tab_control.add(self.analyze_tab, text="✉️ Analyze Email")
-            self.tab_control.add(self.report_tab, text="📊 Report")
-            self.tab_control.add(self.urls_tab, text="🔗 Suspicious URLs")
-            self.tab_control.add(self.settings_tab, text="⚙️ Model/Settings")
-            self.tab_control.pack(expand=1, fill="both", padx=10, pady=(10, 0))
-
-            # Setup each tab
-            setup_analyze_tab(self)
-            setup_report_tab(self)
-            setup_urls_tab(self)
-            setup_settings_tab(self)
-
-            # Footer status bar
-            self.create_footer()
-        except Exception as e:
-            print(f"Error setting up UI: {e}")
-            import traceback
-            traceback.print_exc()
-
-    def create_header(self):
-        """Create app header with title and user info"""
-        header_frame = ttk.Frame(self.root, bootstyle="dark")
-        header_frame.pack(fill=tk.X, padx=0, pady=0)
-
-        # Left side - App title
-        title_frame = ttk.Frame(header_frame, bootstyle="dark")
-        title_frame.pack(side=tk.LEFT, padx=15, pady=10)
-
-        # App icon and title
-        title_label = ttk.Label(
-            title_frame,
-            text="🛡️Phishing Detector",
-            font=("Segoe UI", 16, "bold"),
-            bootstyle="light"
-        )
-        title_label.pack(side=tk.LEFT)
-
-        # Right side - User info
-        user_frame = ttk.Frame(header_frame, bootstyle="dark")
-        user_frame.pack(side=tk.RIGHT, padx=15, pady=10)
-
-        # User avatar (placeholder circle)
-        user_avatar = ttk.Label(
-            user_frame,
-            text="👤",  # Placeholder avatar
-            font=("Segoe UI", 14),
-            bootstyle="light"
-        )
-        user_avatar.pack(side=tk.LEFT, padx=(0, 5))
-
-        # User name
-        user_label = ttk.Label(
-            user_frame,
-            text=f"Welcome, {self.current_user}",
-            font=("Segoe UI", 10),
-            bootstyle="light"
-        )
-        user_label.pack(side=tk.LEFT)
-
-    def create_footer(self):
-        """Create footer with status information"""
-        self.footer_frame = ttk.Frame(self.root, bootstyle="dark")
-        self.footer_frame.pack(side=tk.BOTTOM, fill=tk.X)
-
-        # Status indicator - green dot for "ready"
-        self.status_text_indicator = ttk.Label(
-            self.footer_frame,
-            text="●",
-            font=("Segoe UI", 14),
-            foreground="#28a745"
-        )
-        self.status_text_indicator.pack(side=tk.LEFT, padx=10, pady=5)
-
-        # Status text
-        self.status_text = ttk.Label(
-            self.footer_frame,
-            text="Ready",
-            bootstyle="light"
-        )
-        self.status_text.pack(side=tk.LEFT, padx=0, pady=5)
-
-        # Date/time on right
-        self.datetime_label = ttk.Label(
-            self.footer_frame,
-            text=f"Last updated: {self.current_datetime}",
-            bootstyle="secondary"
-        )
-        self.datetime_label.pack(side=tk.RIGHT, padx=10, pady=5)
-
-    def update_status(self, message, status_type="success"):
-        """Update the status bar with a message and appropriate color - Thread Safe"""
+    """Main Streamlit application class."""
+    
+    def __init__(self):
+        self.predictor = PhishingPredictor()
+        self.history_file = "data/analysis_history.json"
+        self.urls_file = "data/suspicious_urls.json"
         
-        def _update():
-            color_map = {
-                "success": "#28a745",
-                "warning": "#ffc107",
-                "error": "#dc3545",
-                "info": "#17a2b8"
-            }
+        # Initialize session state
+        if 'analysis_results' not in st.session_state:
+            st.session_state.analysis_results = None
+        if 'suspicious_urls' not in st.session_state:
+            st.session_state.suspicious_urls = load_suspicious_urls(self.urls_file)
+        
+        # Load model
+        self._load_model()
+    
+    def _load_model(self):
+        """Load the trained model."""
+        try:
+            self.predictor.load_model()
+            st.session_state.model_loaded = True
+        except Exception as e:
+            st.session_state.model_loaded = False
+            st.session_state.model_error = str(e)
+    
+    def run(self):
+        """Run the main Streamlit application."""
+        st.set_page_config(
+            page_title="PhishSniffer - Email Security",
+            page_icon="�️",
+            layout="wide",
+            initial_sidebar_state="expanded"
+        )
+        
+        # Custom CSS
+        st.markdown("""
+        <style>
+        .main-header {
+            background: linear-gradient(90deg, #1f4e79, #2d5aa0);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .risk-high {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .risk-low {
+            background-color: #e8f5e8;
+            border-left: 5px solid #4caf50;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .metric-card {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #dee2e6;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Header
+        st.markdown("""
+        <div class="main-header">
+            <h1>�️ PhishSniffer - Advanced Email Security</h1>
+            <p>AI-Powered Phishing Detection & Analysis Platform</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Sidebar navigation
+        st.sidebar.title("Navigation")
+        page = st.sidebar.selectbox(
+            "Choose a section:",
+            ["📧 Analyze Email", "📊 Reports & History", "🔗 Suspicious URLs", "⚙️ Settings & Model Info"]
+        )
+        
+        # Check model status
+        if not st.session_state.get('model_loaded', False):
+            st.error(f"⚠️ Model not loaded: {st.session_state.get('model_error', 'Unknown error')}")
+            st.info("Please ensure the model is trained and available.")
+            return
+        
+        # Route to different pages
+        if page == "📧 Analyze Email":
+            self._show_analyze_page()
+        elif page == "📊 Reports & History":
+            self._show_reports_page()
+        elif page == "🔗 Suspicious URLs":
+            self._show_urls_page()
+        elif page == "⚙️ Settings & Model Info":
+            self._show_settings_page()
+    
+    def _show_analyze_page(self):
+        """Show the email analysis page."""
+        from gui.analyze_tab import show_analyze_tab
+        show_analyze_tab(self)
+    
+    def _show_reports_page(self):
+        """Show the reports and history page."""
+        from gui.report_tab import show_report_tab
+        show_report_tab(self)
+    
+    def _show_urls_page(self):
+        """Show the suspicious URLs page."""
+        from gui.urls_tab import show_urls_tab
+        show_urls_tab(self)
+    
+    def _show_settings_page(self):
+        """Show the settings and model info page."""
+        from gui.settings_tab import show_settings_tab
+        show_settings_tab(self)
 
-            if hasattr(self, 'status_text_indicator'):
-                self.status_text_indicator.config(foreground=color_map.get(status_type, "#28a745"))
-            if hasattr(self, 'status_text'):
-                self.status_text.config(text=message)
-            if hasattr(self, 'datetime_label'):
-                self.datetime_label.config(text=f"Last updated: {self.current_datetime}")
+def main():
+    """Main function to run the Streamlit app."""
+    app = PhishingDetectorApp()
+    app.run()
 
-        # Check if we're in the main thread
-        if threading.current_thread() is threading.main_thread():
-            _update()
-        else:
-            # Schedule the update to run in the main thread
-            self.root.after(0, _update)
+if __name__ == "__main__":
+    main()

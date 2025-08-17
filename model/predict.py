@@ -1,9 +1,247 @@
-import numpy as np
-import traceback
-from model.features import prepare_features_for_model
+"""
+Prediction logic for phishing email detection.
+Loads trained models and provides prediction interface.
+"""
 
+import os
+import joblib
+import numpy as np
+import pandas as pd
+from datetime import datetime
+import warnings
+warnings.filterwarnings('ignore')
+
+class PhishingPredictor:
+    """Main prediction class for phishing email detection."""
+    
+    def __init__(self, model_dir='trained_models'):
+        self.model_dir = model_dir
+        self.model = None
+        self.feature_extractor = None
+        self.model_metadata = None
+        self.threshold = 0.5  # Default threshold for classification
+    
+    def load_model(self, model_name=None):
+        """Load a trained model and feature extractor."""
+        if model_name is None:
+            # Find the most recent model
+            model_files = [f for f in os.listdir(self.model_dir) if f.endswith('.joblib') and not 'feature_extractor' in f]
+            if not model_files:
+                raise FileNotFoundError("No trained models found")
+            
+            # Get the most recent model based on filename timestamp
+            model_files.sort(reverse=True)
+            model_name = model_files[0].replace('.joblib', '')
+        
+        # Load model
+        model_path = os.path.join(self.model_dir, f"{model_name}.joblib")
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model not found: {model_path}")
+        
+        self.model = joblib.load(model_path)
+        print(f"✓ Loaded model: {model_path}")
+        
+        # Load feature extractor
+        feature_extractor_path = os.path.join(self.model_dir, f"{model_name}_feature_extractor.joblib")
+        if os.path.exists(feature_extractor_path):
+            self.feature_extractor = joblib.load(feature_extractor_path)
+            print(f"✓ Loaded feature extractor: {feature_extractor_path}")
+        else:
+            print(f"⚠ Feature extractor not found: {feature_extractor_path}")
+        
+        # Load metadata
+        metadata_path = os.path.join(self.model_dir, f"{model_name}_metadata.json")
+        if os.path.exists(metadata_path):
+            import json
+            with open(metadata_path, 'r') as f:
+                self.model_metadata = json.load(f)
+            print(f"✓ Loaded metadata: {metadata_path}")
+        
+        return True
+    
+    def predict(self, texts, return_proba=True):
+        """Predict whether emails are phishing or legitimate."""
+        if self.model is None:
+            raise ValueError("No model loaded. Call load_model() first.")
+        
+        if isinstance(texts, str):
+            texts = [texts]
+        
+        # Extract features
+        if self.feature_extractor is not None:
+            features = self.feature_extractor.transform(texts)
+        else:
+            # Fallback to legacy feature extraction
+            features = self._extract_legacy_features(texts)
+        
+        # Get predictions
+        predictions = self.model.predict(features)
+        
+        results = {
+            'predictions': predictions,
+            'is_phishing': predictions >= self.threshold
+        }
+        
+        if return_proba and hasattr(self.model, 'predict_proba'):
+            probabilities = self.model.predict_proba(features)
+            results['probabilities'] = probabilities[:, 1] if probabilities.shape[1] > 1 else probabilities
+        elif return_proba and hasattr(self.model, 'decision_function'):
+            scores = self.model.decision_function(features)
+            # Convert to probabilities using sigmoid
+            results['probabilities'] = 1 / (1 + np.exp(-scores))
+        
+        return results
+    
+    def predict_single(self, text, return_details=True):
+        """Predict a single email with detailed analysis."""
+        result = self.predict([text], return_proba=True)
+        
+        single_result = {
+            'text': text,
+            'is_phishing': bool(result['is_phishing'][0]),
+            'prediction': float(result['predictions'][0]),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        if 'probabilities' in result:
+            single_result['probability'] = float(result['probabilities'][0])
+        
+        if return_details:
+            single_result['details'] = self._generate_prediction_details(text, single_result)
+        
+        return single_result
+    
+    def _generate_prediction_details(self, text, prediction_result):
+        """Generate detailed analysis of the prediction."""
+        details = {
+            'features_detected': [],
+            'risk_factors': [],
+            'confidence_level': 'Low'
+        }
+        
+        text_lower = text.lower()
+        
+        # Check for various risk factors
+        if prediction_result.get('probability', 0) > 0.8:
+            details['confidence_level'] = 'High'
+        elif prediction_result.get('probability', 0) > 0.6:
+            details['confidence_level'] = 'Medium'
+        
+        # URL analysis
+        import re
+        urls = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', text)
+        if urls:
+            details['features_detected'].append(f"Contains {len(urls)} URL(s)")
+            
+            # Check for shortened URLs
+            short_domains = ['bit.ly', 'tinyurl', 'goo.gl', 't.co']
+            if any(domain in url for url in urls for domain in short_domains):
+                details['risk_factors'].append("Contains shortened URLs")
+        
+        # Urgency keywords
+        urgency_words = ['urgent', 'immediately', 'expires', 'act now', 'limited time']
+        found_urgency = [word for word in urgency_words if word in text_lower]
+        if found_urgency:
+            details['risk_factors'].append(f"Urgency language: {', '.join(found_urgency)}")
+        
+        # Sensitive data requests
+        sensitive_words = ['password', 'credit card', 'ssn', 'login']
+        found_sensitive = [word for word in sensitive_words if word in text_lower]
+        if found_sensitive:
+            details['risk_factors'].append(f"Requests sensitive data: {', '.join(found_sensitive)}")
+        
+        # Money/financial terms
+        money_words = ['money', 'payment', 'prize', 'reward', 'gift card']
+        found_money = [word for word in money_words if word in text_lower]
+        if found_money:
+            details['features_detected'].append(f"Financial terms: {', '.join(found_money)}")
+        
+        return details
+    
+    def _extract_legacy_features(self, texts):
+        """Legacy feature extraction for backward compatibility."""
+        features = []
+        
+        for text in texts:
+            text_features = self._get_legacy_text_features(str(text))
+            features.append(text_features)
+        
+        return np.array(features)
+    
+    def _get_legacy_text_features(self, text):
+        """Extract legacy features from text."""
+        import re
+        
+        if pd.isna(text) or text == "":
+            return np.zeros(10)
+        
+        text = str(text).lower()
+        features = []
+        
+        # Feature 1: Suspicious senders
+        suspicious_senders = ['paypal', 'bank', 'account', 'security', 'amazon']
+        features.append(int(any(sender in text[:500] for sender in suspicious_senders)))
+        
+        # Feature 2: URLs
+        features.append(int(bool(re.search(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', text))))
+        
+        # Feature 3: Shortened URLs
+        short_domains = ['bit.ly', 'tinyurl', 'goo.gl', 't.co', 'ow.ly']
+        features.append(int(any(domain in text for domain in short_domains)))
+        
+        # Feature 4: IP URLs
+        features.append(int(bool(re.search(r'https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', text))))
+        
+        # Feature 5: Urgency words
+        urgency_words = ['urgent', 'immediately', 'alert', 'expires']
+        features.append(int(any(word in text for word in urgency_words)))
+        
+        # Feature 6: Sensitive requests
+        sensitive_words = ['password', 'credit card', 'ssn', 'login']
+        features.append(int(any(word in text for word in sensitive_words)))
+        
+        # Feature 7: Attachments
+        attachment_words = ['attach', 'document', 'file', 'pdf']
+        features.append(int(any(word in text for word in attachment_words)))
+        
+        # Feature 8: Money terms
+        money_terms = ['$', 'money', 'payment', 'prize', 'reward']
+        features.append(int(any(term in text for term in money_terms)))
+        
+        # Feature 9: Threats
+        threat_terms = ['suspended', 'terminated', 'closed', 'fraud']
+        features.append(int(any(term in text for term in threat_terms)))
+        
+        # Feature 10: Offers
+        offer_terms = ['won', 'prize', 'gift', 'reward', 'congratulations']
+        features.append(int(any(term in text for term in offer_terms)))
+        
+        return np.array(features, dtype=float)
+    
+    def set_threshold(self, threshold):
+        """Set the classification threshold."""
+        if not 0 <= threshold <= 1:
+            raise ValueError("Threshold must be between 0 and 1")
+        self.threshold = threshold
+        print(f"✓ Classification threshold set to: {threshold}")
+    
+    def get_model_info(self):
+        """Get information about the loaded model."""
+        if self.model is None:
+            return "No model loaded"
+        
+        info = {
+            'model_type': type(self.model).__name__,
+            'threshold': self.threshold,
+            'has_feature_extractor': self.feature_extractor is not None,
+            'metadata': self.model_metadata
+        }
+        
+        return info
+
+# Legacy functions for backward compatibility
 def run_model(app, features):
-    """Run the machine learning model on the features"""
+    """Legacy function - run the machine learning model on the features"""
     try:
         # Check if model is loaded
         if app.loaded_model is None:
@@ -36,6 +274,7 @@ def run_model(app, features):
 
     except Exception as e:
         print(f"Error running model: {str(e)}")
+        import traceback
         traceback.print_exc()
         return 0.5  # Default value in case of error
 
