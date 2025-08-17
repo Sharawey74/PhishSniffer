@@ -112,5 +112,95 @@
     "source": "email analysis",
     "date_added": "2025-08-17 16:58:11",
     "risk_level": "High"
+  },
+  {
+    "url": "https://bit.ly",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:51:05",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://company.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:57:42",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://accounts.google.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://myaccount.google.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://www.gstatic.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://accounts.",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://a",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://accou",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://accounts.google.c",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:58:18",
+    "risk_level": "High"
+  },
+  {
+    "url": "https://c.gle",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:59:36",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://fonts.gstatic.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:59:36",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://storage.go",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:59:36",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://storage.googleapis.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:59:36",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://www.kaggle.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:59:36",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://notifications.google.com",
+    "source": "email analysis",
+    "date_added": "2025-08-17 19:59:36",
+    "risk_level": "Medium"
   }
 ]
