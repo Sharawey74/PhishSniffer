@@ -13,18 +13,18 @@ import re
 def show_report_tab(app):
     """Show the enhanced analysis report interface."""
     st.markdown("""
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="color: #1e3c72; margin-bottom: 0.5rem;">📊 Analysis Reports & History</h1>
-        <p style="color: #64748b; font-size: 1.1rem;">Comprehensive email security analysis dashboard</p>
+    <div style="text-align: center; margin-bottom: 2rem; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 1.5rem; color: white;">
+        <h1 style="color: white; margin-bottom: 0.5rem;">📊 Analysis Reports & History</h1>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem;">Comprehensive email security analysis dashboard</p>
     </div>
     """, unsafe_allow_html=True)
     
     # Check if we have analysis results
     if not st.session_state.analysis_results:
         st.markdown("""
-        <div class="content-card" style="text-align: center; padding: 3rem;">
-            <h3 style="color: #64748b; margin-bottom: 1rem;">No Analysis Results Available</h3>
-            <p style="color: #64748b; margin-bottom: 2rem;">Please analyze an email first to view detailed reports.</p>
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; text-align: center; padding: 3rem; color: white;">
+            <h3 style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem;">No Analysis Results Available</h3>
+            <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 2rem;">Please analyze an email first to view detailed reports.</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -55,10 +55,10 @@ def show_report_tab(app):
         formatted_time = datetime.now().strftime("%I:%M %p")
     
     st.markdown(f"""
-    <div class="content-card">
-        <h2 style="color: #1e3c72; margin-bottom: 1rem;">📧 Email Security Analysis Report</h2>
-        <p style="color: #64748b; margin-bottom: 0.5rem;"><strong>Analysis Date:</strong> {formatted_date}</p>
-        <p style="color: #64748b; margin-bottom: 1rem;"><strong>Analysis Time:</strong> {formatted_time}</p>
+    <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 1.5rem; color: white;">
+        <h2 style="color: white; margin-bottom: 1rem;">📧 Email Security Analysis Report</h2>
+        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 0.5rem;"><strong>Analysis Date:</strong> {formatted_date}</p>
+        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem;"><strong>Analysis Time:</strong> {formatted_time}</p>
     </div>
     """, unsafe_allow_html=True)
     

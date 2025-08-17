@@ -14,10 +14,19 @@ from storage.urls import save_suspicious_urls
 
 def show_analyze_tab(app):
     """Show the email analysis interface."""
-    st.header("📧 Email Analysis")
+    st.markdown("""
+    <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 1.5rem; margin: 1rem 0; color: white;">
+        <h1 style="color: white; text-align: center; margin-bottom: 1rem;">📧 Email Analysis</h1>
+        <p style="text-align: center; opacity: 0.8;">Advanced AI-powered phishing detection and email security analysis</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Email input section
-    st.subheader("Email Input")
+    st.markdown("""
+    <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 1rem; margin: 1rem 0; color: white;">
+        <h3 style="color: white; margin-bottom: 1rem;">📝 Email Input</h3>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Tabs for different input methods
     input_method = st.radio(

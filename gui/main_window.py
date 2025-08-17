@@ -53,27 +53,50 @@ class PhishingDetectorApp:
             initial_sidebar_state="collapsed"  # Collapse sidebar since we're using tabs
         )
         
-        # Enhanced CSS for modern dashboard with animations
+        # Enhanced CSS for modern dashboard with glowing blue background and glassmorphism
         st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* Global Styles */
+        /* Global Styles with Glowing Blue Background */
         .stApp {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: radial-gradient(circle at center, #004cc5 0%, #002a6b 50%, #001433 100%);
             min-height: 100vh;
+            position: relative;
         }
         
-        /* Animated Header */
+        .stApp::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 76, 197, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 76, 197, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 76, 197, 0.1) 0%, transparent 50%);
+            animation: glow 4s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+        
+        @keyframes glow {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        /* Glassmorphism Header */
         .main-header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 2rem;
-            border-radius: 16px;
+            border-radius: 20px;
             color: white;
             text-align: center;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(0, 76, 197, 0.3), 0 5px 15px rgba(0, 0, 0, 0.1);
             animation: slideDown 0.8s ease-out;
             position: relative;
             overflow: hidden;
@@ -86,21 +109,26 @@ class PhishingDetectorApp:
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
             animation: shimmer 3s infinite;
         }
         
         .main-header h1 {
             font-weight: 700;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(0, 76, 197, 0.8);
+            background: linear-gradient(45deg, #ffffff, #a8d8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .main-header p {
             font-size: 1.2rem;
             margin: 0.5rem 0 0 0;
             opacity: 0.9;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
         
         /* Animation Keyframes */
@@ -136,27 +164,29 @@ class PhishingDetectorApp:
             50% { transform: scale(1.05); }
         }
         
-        /* Enhanced Tabs */
+        /* Enhanced Tabs with Glassmorphism */
         .stTabs [data-baseweb="tab-list"] {
             gap: 12px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 8px;
-            border-radius: 16px;
+            border-radius: 20px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.2);
             animation: fadeInUp 0.6s ease-out 0.2s both;
         }
         
         .stTabs [data-baseweb="tab"] {
             height: 55px;
             padding: 0px 28px;
-            background-color: transparent;
-            border-radius: 12px;
-            color: #64748b;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: #ffffff;
             font-weight: 600;
             font-size: 1rem;
-            border: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -169,17 +199,18 @@ class PhishingDetectorApp:
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #004cc5 0%, #0066ff 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
             z-index: -1;
         }
         
         .stTabs [aria-selected="true"] {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: linear-gradient(135deg, #004cc5 0%, #0066ff 100%) !important;
             color: white !important;
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 76, 197, 0.5);
             transform: translateY(-2px);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
         
         .stTabs [aria-selected="true"]::before {
@@ -187,21 +218,55 @@ class PhishingDetectorApp:
         }
         
         .stTabs [data-baseweb="tab"]:hover:not([aria-selected="true"]) {
-            background-color: rgba(102, 126, 234, 0.1) !important;
-            color: #667eea !important;
+            background: rgba(0, 76, 197, 0.3) !important;
+            color: #ffffff !important;
             transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 76, 197, 0.3);
         }
         
-        /* Analysis Results Styling */
+        /* Transparent Content Areas and Tables */
         .analysis-result {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
             padding: 1.5rem;
             margin: 1rem 0;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.2);
             animation: fadeInUp 0.6s ease-out;
-            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Transparent Tables */
+        .stDataFrame {
+            background: transparent !important;
+        }
+        
+        .stDataFrame > div {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 15px !important;
+        }
+        
+        .stDataFrame table {
+            background: transparent !important;
+            color: white !important;
+        }
+        
+        .stDataFrame table th {
+            background: rgba(0, 76, 197, 0.3) !important;
+            color: white !important;
+            border: none !important;
+        }
+        
+        .stDataFrame table td {
+            background: transparent !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .stDataFrame table tr:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
         }
         
         /* Risk Level Styling */
@@ -230,46 +295,89 @@ class PhishingDetectorApp:
             box-shadow: 0 6px 20px rgba(255, 212, 59, 0.3);
         }
         
-        /* Enhanced Content Areas */
+        /* Transparent Text Input Areas */
         .stSelectbox > div > div {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            border: 2px solid rgba(102, 126, 234, 0.2);
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 15px !important;
+            color: white !important;
+        }
+        
+        .stSelectbox > div > div > div {
+            color: white !important;
         }
         
         .stTextArea > div > div > textarea {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            border: 2px solid rgba(102, 126, 234, 0.2);
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 15px !important;
+            color: white !important;
         }
         
-        /* Button Styling */
+        .stTextArea > div > div > textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        
+        .stTextInput > div > div > input {
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 15px !important;
+            color: white !important;
+        }
+        
+        .stTextInput > div > div > input::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        
+        /* Enhanced Button Styling */
         .stButton > button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #004cc5 0%, #0066ff 100%);
             color: white;
-            border-radius: 12px;
-            border: none;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 0.75rem 2rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 76, 197, 0.4);
+            backdrop-filter: blur(10px);
         }
         
         .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.6);
+            background: linear-gradient(135deg, #0066ff 0%, #0080ff 100%);
         }
         
-        /* Content Cards */
+        /* Transparent Content Cards */
         .content-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
             padding: 1.5rem;
             margin: 1rem 0;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.2);
             animation: fadeInUp 0.6s ease-out;
+            color: white;
+        }
+        
+        /* Enhanced Metrics */
+        .metric-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 76, 197, 0.3);
         }
         
         /* Date Styling */
