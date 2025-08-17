@@ -245,7 +245,7 @@ class PhishingDetectorApp:
         }
         
         /* Transparent Tables - Complete Transparency */
-        .stDataFrame {
+        .stDataFrame, .stDataFrame * {
             background: transparent !important;
         }
         
@@ -255,26 +255,40 @@ class PhishingDetectorApp:
             border-radius: 15px !important;
         }
         
-        .stDataFrame table {
+        .stDataFrame table, .stDataFrame table * {
             background: transparent !important;
             color: #FFFFFF !important;
         }
         
-        .stDataFrame table th {
+        .stDataFrame table th, .stDataFrame thead tr th {
             background: transparent !important;
             color: #FFFFFF !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             font-weight: 600 !important;
         }
         
-        .stDataFrame table td {
+        .stDataFrame table td, .stDataFrame tbody tr td {
             background: transparent !important;
             color: #FFFFFF !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
         
-        .stDataFrame table tr:hover {
+        .stDataFrame table tr:hover, .stDataFrame table tr:hover td {
             background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        /* Additional dataframe styling for consistency */
+        .stDataFrame [data-testid="stDataFrame"], 
+        .stDataFrame [data-testid="stDataFrame"] * {
+            background: transparent !important;
+            color: #FFFFFF !important;
+        }
+        
+        .stDataFrame [role="columnheader"],
+        .stDataFrame [role="gridcell"] {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
         
         /* Transparent Status Indicators */

@@ -2,7 +2,7 @@
   "text": "\n    From: security@paypal-update.com\n    To: user@example.com\n    Subject: URGENT: Verify Your PayPal Account Now!\n    \n    Dear Valued Customer,\n    \n    Your PayPal account has been temporarily suspended due to suspicious activity.\n    \n    To restore access, please click the link below and verify your information:\n    http://paypal-verification-center.suspicious-site.com\n    \n    Act now! Your account will be permanently closed if you don't verify within 24 hours.\n    \n    Click here to verify: http://bit.ly/paypal-urgent-verify\n    \n    Best regards,\n    PayPal Security Team\n    ",
   "is_phishing": true,
   "prediction": 1.0,
-  "timestamp": "2025-08-17T21:29:29.522047",
+  "timestamp": "2025-08-17T22:48:35.672283",
   "probability": 0.96,
   "details": {
     "features_detected": [

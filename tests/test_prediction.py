@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 """
 Test script to debug prediction results and data structure
+To run the test, use the following command: python tests/test_prediction.py
 """
 
-from model.predict import PhishingPredictor
 import json
+from pathlib import Path
+import os
+import sys
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+def ensure_import_path():
+    """Add project root to Python path"""
+    project_root = str(Path(__file__).parent.parent)
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+        print(f"ℹ️ Added project root to path: {project_root}")
 
 def test_prediction():
     """Test prediction with sample phishing email"""
-    
+    try:
+        ensure_import_path()
+        from model.predict import PhishingPredictor
+    except ImportError as e:
+        print(f"Error importing PhishingPredictor: {e}")
+        return
+
     # Initialize predictor
     predictor = PhishingPredictor()
     predictor.load_model()

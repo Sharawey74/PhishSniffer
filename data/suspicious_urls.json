@@ -202,5 +202,35 @@
     "source": "email analysis",
     "date_added": "2025-08-17 19:59:36",
     "risk_level": "Medium"
+  },
+  {
+    "url": "https://www.academia.edu",
+    "source": "email analysis",
+    "date_added": "2025-08-17 23:05:32",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://academia.edu",
+    "source": "email analysis",
+    "date_added": "2025-08-17 23:05:32",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "http://www.w3.o",
+    "source": "email analysis",
+    "date_added": "2025-08-17 23:05:32",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "http://a.academ",
+    "source": "email analysis",
+    "date_added": "2025-08-17 23:05:32",
+    "risk_level": "Medium"
+  },
+  {
+    "url": "https://aca",
+    "source": "email analysis",
+    "date_added": "2025-08-17 23:05:32",
+    "risk_level": "Medium"
   }
 ]
