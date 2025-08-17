@@ -285,44 +285,45 @@ def _display_analysis_results(result):
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        # Create an enhanced gauge chart
+        # Create an enhanced gauge chart with proper colors
         import plotly.graph_objects as go
         
-        # Determine color based on risk level
+        # Determine color based on risk level - match the risk indicators
         if probability >= 0.7:
-            gauge_color = "#ff6b6b"
-            bar_color = "#ff6b6b"
+            gauge_color = "#ff6b6b"  # Red for high risk
+            risk_level = "HIGH"
         elif probability >= 0.3:
-            gauge_color = "#ffd43b"
-            bar_color = "#ffd43b"
+            gauge_color = "#ffd43b"  # Yellow for medium risk  
+            risk_level = "MEDIUM"
         else:
-            gauge_color = "#51cf66"
-            bar_color = "#51cf66"
+            gauge_color = "#51cf66"  # Green for low risk
+            risk_level = "LOW"
         
         fig = go.Figure(go.Indicator(
             mode = "gauge+number+delta",
             value = probability * 100,
             domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': "Phishing Risk Score", 'font': {'size': 20, 'color': '#1e3c72'}},
-            delta = {'reference': 50, 'suffix': '%'},
+            title = {'text': f"Risk Level: {risk_level}", 'font': {'size': 18, 'color': '#FFFFFF'}},
+            delta = {'reference': 50, 'suffix': '%', 'font': {'color': '#FFFFFF'}},
+            number = {'font': {'size': 24, 'color': gauge_color}},
             gauge = {
                 'axis': {
                     'range': [None, 100],
                     'tickwidth': 2,
-                    'tickcolor': "#1e3c72",
-                    'tickfont': {'size': 12, 'color': '#1e3c72'}
+                    'tickcolor': "#FFFFFF",
+                    'tickfont': {'size': 12, 'color': '#FFFFFF'}
                 },
-                'bar': {'color': bar_color, 'thickness': 0.8},
-                'bgcolor': "rgba(255,255,255,0.8)",
+                'bar': {'color': gauge_color, 'thickness': 0.8},
+                'bgcolor': "rgba(255,255,255,0.1)",
                 'borderwidth': 3,
-                'bordercolor': "#1e3c72",
+                'bordercolor': "#FFFFFF",
                 'steps': [
                     {'range': [0, 30], 'color': "rgba(81, 207, 102, 0.3)"},
                     {'range': [30, 70], 'color': "rgba(255, 212, 59, 0.3)"},
                     {'range': [70, 100], 'color': "rgba(255, 107, 107, 0.3)"}
                 ],
                 'threshold': {
-                    'line': {'color': "#1e3c72", 'width': 3},
+                    'line': {'color': "#FFFFFF", 'width': 3},
                     'thickness': 0.75,
                     'value': 70
                 }
@@ -331,7 +332,7 @@ def _display_analysis_results(result):
         
         fig.update_layout(
             height=350,
-            font={'color': "#1e3c72", 'family': "Inter"},
+            font={'color': "#FFFFFF", 'family': "Inter"},
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             margin=dict(l=20, r=20, t=40, b=20)

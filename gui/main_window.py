@@ -64,6 +64,12 @@ class PhishingDetectorApp:
             background: radial-gradient(circle at center, #004cc5 0%, #002a6b 50%, #001433 100%);
             min-height: 100vh;
             position: relative;
+            color: #FFFFFF !important;
+        }
+        
+        /* Force ALL text to be white */
+        * {
+            color: #FFFFFF !important;
         }
         
         .stApp::before {
@@ -93,7 +99,7 @@ class PhishingDetectorApp:
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 2rem;
             border-radius: 20px;
-            color: white;
+            color: #FFFFFF !important;
             text-align: center;
             margin-bottom: 2rem;
             box-shadow: 0 15px 35px rgba(0, 76, 197, 0.3), 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -117,17 +123,15 @@ class PhishingDetectorApp:
             font-weight: 700;
             font-size: 2.8rem;
             margin: 0;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(0, 76, 197, 0.8);
-            background: linear-gradient(45deg, #ffffff, #a8d8ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #FFFFFF !important;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 76, 197, 0.8);
         }
         
         .main-header p {
             font-size: 1.2rem;
             margin: 0.5rem 0 0 0;
             opacity: 0.9;
+            color: #FFFFFF !important;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
         
@@ -224,49 +228,81 @@ class PhishingDetectorApp:
             box-shadow: 0 5px 15px rgba(0, 76, 197, 0.3);
         }
         
-        /* Transparent Content Areas and Tables */
-        .analysis-result {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.2);
-            animation: fadeInUp 0.6s ease-out;
+        /* ALL TEXT WHITE - Comprehensive Coverage */
+        .stApp, .stApp *, 
+        .stMarkdown, .stMarkdown *,
+        .stTable, .stTable *,
+        .stDataFrame, .stDataFrame *,
+        .stMetric, .stMetric *,
+        .stSelectbox, .stSelectbox *,
+        .stTextArea, .stTextArea *,
+        .stTextInput, .stTextInput *,
+        .stButton, .stButton *,
+        .stTabs, .stTabs *,
+        h1, h2, h3, h4, h5, h6,
+        p, span, div, td, th, tr {
+            color: #FFFFFF !important;
         }
         
-        /* Transparent Tables */
+        /* Transparent Tables - Complete Transparency */
         .stDataFrame {
             background: transparent !important;
         }
         
         .stDataFrame > div {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px) !important;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 15px !important;
         }
         
         .stDataFrame table {
             background: transparent !important;
-            color: white !important;
+            color: #FFFFFF !important;
         }
         
         .stDataFrame table th {
-            background: rgba(0, 76, 197, 0.3) !important;
-            color: white !important;
-            border: none !important;
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            font-weight: 600 !important;
         }
         
         .stDataFrame table td {
             background: transparent !important;
-            color: white !important;
+            color: #FFFFFF !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
         
         .stDataFrame table tr:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        /* Transparent Status Indicators */
+        .risk-high {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.2);
+        }
+        
+        .risk-low {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(81, 207, 102, 0.2);
+        }
+        
+        .risk-medium {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(255, 212, 59, 0.2);
         }
         
         /* Risk Level Styling */
@@ -295,25 +331,35 @@ class PhishingDetectorApp:
             box-shadow: 0 6px 20px rgba(255, 212, 59, 0.3);
         }
         
+        /* Transparent Content Areas */
+        .analysis-result, .content-card {
+            background: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+            color: #FFFFFF !important;
+        }
+        
         /* Transparent Text Input Areas */
         .stSelectbox > div > div {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px) !important;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             border-radius: 15px !important;
-            color: white !important;
+            color: #FFFFFF !important;
         }
         
         .stSelectbox > div > div > div {
-            color: white !important;
+            color: #FFFFFF !important;
         }
         
         .stTextArea > div > div > textarea {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px) !important;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             border-radius: 15px !important;
-            color: white !important;
+            color: #FFFFFF !important;
         }
         
         .stTextArea > div > div > textarea::placeholder {
@@ -321,63 +367,65 @@ class PhishingDetectorApp:
         }
         
         .stTextInput > div > div > input {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px) !important;
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             border-radius: 15px !important;
-            color: white !important;
+            color: #FFFFFF !important;
         }
         
         .stTextInput > div > div > input::placeholder {
             color: rgba(255, 255, 255, 0.7) !important;
         }
         
-        /* Enhanced Button Styling */
+        /* Transparent Buttons with White Text */
         .stButton > button {
-            background: linear-gradient(135deg, #004cc5 0%, #0066ff 100%);
-            color: white;
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 0.75rem 2rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(0, 76, 197, 0.4);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 20px rgba(0, 76, 197, 0.2);
         }
         
         .stButton > button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.6);
-            background: linear-gradient(135deg, #0066ff 0%, #0080ff 100%);
+            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.4);
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
         }
         
-        /* Transparent Content Cards */
-        .content-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            box-shadow: 0 10px 30px rgba(0, 76, 197, 0.2);
-            animation: fadeInUp 0.6s ease-out;
-            color: white;
-        }
-        
-        /* Enhanced Metrics */
+        /* Transparent Metrics */
         .metric-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: transparent !important;
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 15px;
             padding: 1rem;
-            color: white;
+            color: #FFFFFF !important;
             transition: all 0.3s ease;
         }
         
         .metric-container:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 76, 197, 0.3);
+        }
+        
+        /* Override any remaining backgrounds */
+        .stExpander > details {
+            background: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .stExpander > details > summary {
+            background: transparent !important;
+            color: #FFFFFF !important;
+        }
+        
+        .stAlert {
+            background: transparent !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
         
         /* Date Styling */

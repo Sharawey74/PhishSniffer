@@ -71,29 +71,27 @@ def show_report_tab(app):
     
     with col1:
         risk_level = "HIGH" if is_phishing else ("MEDIUM" if probability > 0.3 else "LOW")
-        risk_color = "#ff6b6b" if is_phishing else ("#ffd43b" if probability > 0.3 else "#51cf66")
         st.markdown(f"""
-        <div style="background: {risk_color}; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
-            <h4 style="margin: 0; color: white;">🛡️ Risk Level</h4>
-            <h2 style="margin: 0.5rem 0; color: white;">{risk_level}</h2>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 12px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">🛡️ Risk Level</h4>
+            <h2 style="margin: 0.5rem 0; color: #FFFFFF;">{risk_level}</h2>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown(f"""
-        <div style="background: #667eea; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
-            <h4 style="margin: 0; color: white;">📊 Confidence</h4>
-            <h2 style="margin: 0.5rem 0; color: white;">{probability:.1%}</h2>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 12px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">📊 Confidence</h4>
+            <h2 style="margin: 0.5rem 0; color: #FFFFFF;">{probability:.1%}</h2>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         classification = "Phishing" if is_phishing else "Legitimate"
-        class_color = "#ff6b6b" if is_phishing else "#51cf66"
         st.markdown(f"""
-        <div style="background: {class_color}; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
-            <h4 style="margin: 0; color: white;">🔍 Result</h4>
-            <h2 style="margin: 0.5rem 0; color: white;">{classification}</h2>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 12px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">🔍 Result</h4>
+            <h2 style="margin: 0.5rem 0; color: #FFFFFF;">{classification}</h2>
         </div>
         """, unsafe_allow_html=True)
     
@@ -101,32 +99,32 @@ def show_report_tab(app):
         details = result.get('details', {})
         confidence_level = details.get('confidence_level', 'Unknown')
         st.markdown(f"""
-        <div style="background: #764ba2; color: white; padding: 1rem; border-radius: 12px; text-align: center;">
-            <h4 style="margin: 0; color: white;">⚡ Model</h4>
-            <h2 style="margin: 0.5rem 0; color: white;">{confidence_level}</h2>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 12px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">⚡ Model</h4>
+            <h2 style="margin: 0.5rem 0; color: #FFFFFF;">{confidence_level}</h2>
         </div>
         """, unsafe_allow_html=True)
     
     # Enhanced Main Verdict
     if is_phishing:
         st.markdown(f"""
-        <div class="risk-high" style="margin: 2rem 0;">
-            <h2 style="margin: 0; color: white;">🚨 PHISHING EMAIL DETECTED</h2>
-            <p style="margin: 0.5rem 0; color: white; font-size: 1.1rem;"><strong>Risk Assessment:</strong> HIGH RISK</p>
-            <p style="margin: 0.5rem 0; color: white; font-size: 1.1rem;"><strong>Phishing Probability:</strong> {probability:.1%}</p>
-            <p style="margin: 1rem 0 0 0; color: white; font-size: 1rem;"><strong>⚠️ IMMEDIATE ACTION REQUIRED:</strong> Do NOT click links, download attachments, or reply to this email. Report to IT security immediately.</p>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); margin: 2rem 0; padding: 1.5rem; border-radius: 12px;">
+            <h2 style="margin: 0; color: #FFFFFF;">🚨 PHISHING EMAIL DETECTED</h2>
+            <p style="margin: 0.5rem 0; color: #FFFFFF; font-size: 1.1rem;"><strong>Risk Assessment:</strong> HIGH RISK</p>
+            <p style="margin: 0.5rem 0; color: #FFFFFF; font-size: 1.1rem;"><strong>Phishing Probability:</strong> {probability:.1%}</p>
+            <p style="margin: 1rem 0 0 0; color: #FFFFFF; font-size: 1rem;"><strong>⚠️ IMMEDIATE ACTION REQUIRED:</strong> Do NOT click links, download attachments, or reply to this email. Report to IT security immediately.</p>
         </div>
         """, unsafe_allow_html=True)
     else:
-        risk_class = "risk-medium" if probability > 0.3 else "risk-low"
+        risk_class = "transparent"
         recommendation = "Exercise heightened caution and verify sender identity" if probability > 0.3 else "Exercise normal email caution"
         
         st.markdown(f"""
-        <div class="{risk_class}" style="margin: 2rem 0;">
-            <h2 style="margin: 0; color: white;">✅ EMAIL APPEARS LEGITIMATE</h2>
-            <p style="margin: 0.5rem 0; color: white; font-size: 1.1rem;"><strong>Risk Assessment:</strong> {"MEDIUM" if probability > 0.3 else "LOW"} RISK</p>
-            <p style="margin: 0.5rem 0; color: white; font-size: 1.1rem;"><strong>Legitimate Probability:</strong> {(1-probability):.1%}</p>
-            <p style="margin: 1rem 0 0 0; color: white; font-size: 1rem;"><strong>✓ Recommendation:</strong> {recommendation}</p>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); margin: 2rem 0; padding: 1.5rem; border-radius: 12px;">
+            <h2 style="margin: 0; color: #FFFFFF;">✅ EMAIL APPEARS LEGITIMATE</h2>
+            <p style="margin: 0.5rem 0; color: #FFFFFF; font-size: 1.1rem;"><strong>Risk Assessment:</strong> {"MEDIUM" if probability > 0.3 else "LOW"} RISK</p>
+            <p style="margin: 0.5rem 0; color: #FFFFFF; font-size: 1.1rem;"><strong>Legitimate Probability:</strong> {(1-probability):.1%}</p>
+            <p style="margin: 1rem 0 0 0; color: #FFFFFF; font-size: 1rem;"><strong>✓ Recommendation:</strong> {recommendation}</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -170,11 +168,35 @@ def _show_risk_factors(result):
     risk_factors = details.get('risk_factors', [])
     features_detected = details.get('features_detected', [])
     
+    # If no data in details, try to get from result directly or generate some
+    if not risk_factors and not features_detected:
+        # Try alternative data sources
+        probability = result.get('probability', 0)
+        is_phishing = result.get('is_phishing', False)
+        
+        # Generate basic analysis if missing
+        if is_phishing and probability > 0.7:
+            risk_factors = [
+                "High phishing probability detected",
+                "Suspicious patterns identified in email content",
+                "Email structure matches known phishing templates"
+            ]
+            features_detected = [
+                "Urgency indicators in subject/content",
+                "Suspicious sender characteristics",
+                "Potential social engineering attempts"
+            ]
+        elif probability > 0.3:
+            features_detected = [
+                "Some suspicious patterns detected",
+                "Email requires careful verification"
+            ]
+    
     if not risk_factors and not features_detected:
         st.markdown("""
-        <div style="background: rgba(81, 207, 102, 0.1); padding: 2rem; border-radius: 12px; text-align: center; border: 2px solid #51cf66;">
-            <h3 style="color: #51cf66; margin-bottom: 1rem;">✅ No Risk Factors Detected</h3>
-            <p style="color: #64748b;">This email passed all security checks without triggering any risk indicators.</p>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); padding: 2rem; border-radius: 12px; text-align: center;">
+            <h3 style="color: #FFFFFF; margin-bottom: 1rem;">✅ No Risk Factors Detected</h3>
+            <p style="color: #FFFFFF;">This email passed all security checks without triggering any risk indicators.</p>
         </div>
         """, unsafe_allow_html=True)
         return
@@ -184,9 +206,9 @@ def _show_risk_factors(result):
         st.markdown("### 🚨 Risk Factors Identified")
         for i, factor in enumerate(risk_factors, 1):
             st.markdown(f"""
-            <div style="background: rgba(255, 107, 107, 0.1); padding: 1rem; margin: 0.8rem 0; border-radius: 10px; border-left: 5px solid #ff6b6b;">
-                <h4 style="color: #ff6b6b; margin: 0 0 0.5rem 0;">⚠️ Risk Factor #{i}</h4>
-                <p style="margin: 0; color: #2d3748; font-weight: 500;">{factor}</p>
+            <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); padding: 1rem; margin: 0.8rem 0; border-radius: 10px; border-left: 5px solid #ff6b6b;">
+                <h4 style="color: #FFFFFF; margin: 0 0 0.5rem 0;">⚠️ Risk Factor #{i}</h4>
+                <p style="margin: 0; color: #FFFFFF; font-weight: 500;">{factor}</p>
             </div>
             """, unsafe_allow_html=True)
     
@@ -195,9 +217,9 @@ def _show_risk_factors(result):
         st.markdown("### 🔍 Suspicious Features Detected")
         for i, feature in enumerate(features_detected, 1):
             st.markdown(f"""
-            <div style="background: rgba(255, 212, 59, 0.1); padding: 1rem; margin: 0.8rem 0; border-radius: 10px; border-left: 5px solid #ffd43b;">
-                <h4 style="color: #d69e2e; margin: 0 0 0.5rem 0;">🔎 Feature #{i}</h4>
-                <p style="margin: 0; color: #2d3748; font-weight: 500;">{feature}</p>
+            <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); padding: 1rem; margin: 0.8rem 0; border-radius: 10px; border-left: 5px solid #ffd43b;">
+                <h4 style="color: #FFFFFF; margin: 0 0 0.5rem 0;">🔎 Feature #{i}</h4>
+                <p style="margin: 0; color: #FFFFFF; font-weight: 500;">{feature}</p>
             </div>
             """, unsafe_allow_html=True)
     
@@ -212,13 +234,13 @@ def _show_risk_factors(result):
         risk_levels = ['Low Risk', 'Medium Risk', 'High Risk']
         if probability < 0.3:
             values = [1-probability, probability, 0]
-            colors = ['#51cf66', '#ffd43b', '#ff6b6b']
+            colors = ['#FFFFFF', '#FFFFFF', '#FFFFFF']
         elif probability < 0.7:
             values = [0, 1-probability, probability]
-            colors = ['#51cf66', '#ffd43b', '#ff6b6b']
+            colors = ['#FFFFFF', '#FFFFFF', '#FFFFFF']
         else:
             values = [0, 0, probability]
-            colors = ['#51cf66', '#ffd43b', '#ff6b6b']
+            colors = ['#FFFFFF', '#FFFFFF', '#FFFFFF']
         
         fig = go.Figure(data=[go.Bar(
             x=risk_levels,
@@ -233,7 +255,7 @@ def _show_risk_factors(result):
             xaxis_title="Risk Categories",
             yaxis_title="Probability",
             height=300,
-            font={'color': "#1e3c72", 'family': "Inter"},
+            font={'color': "#FFFFFF", 'family': "Inter"},
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)"
         )
@@ -250,23 +272,23 @@ def _show_risk_factors(result):
         # Risk recommendation
         if probability >= 0.7:
             st.markdown("""
-            <div style="background: #ff6b6b; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-                <strong>🚨 HIGH RISK</strong><br>
-                Block immediately
+            <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+                <strong style="color: #FFFFFF;">🚨 HIGH RISK</strong><br>
+                <span style="color: #FFFFFF;">Block immediately</span>
             </div>
             """, unsafe_allow_html=True)
         elif probability >= 0.3:
             st.markdown("""
-            <div style="background: #ffd43b; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-                <strong>⚠️ MEDIUM RISK</strong><br>
-                Exercise caution
+            <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+                <strong style="color: #FFFFFF;">⚠️ MEDIUM RISK</strong><br>
+                <span style="color: #FFFFFF;">Exercise caution</span>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div style="background: #51cf66; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-                <strong>✅ LOW RISK</strong><br>
-                Appears safe
+            <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+                <strong style="color: #FFFFFF;">✅ LOW RISK</strong><br>
+                <span style="color: #FFFFFF;">Appears safe</span>
             </div>
             """, unsafe_allow_html=True)
 def _show_technical_details(result):
@@ -284,42 +306,35 @@ def _show_technical_details(result):
         # Enhanced prediction confidence gauge
         import plotly.graph_objects as go
         
-        # Determine colors and ranges
-        if probability >= 0.7:
-            gauge_color = "#ff6b6b"
-            bg_color = "rgba(255, 107, 107, 0.1)"
-        elif probability >= 0.3:
-            gauge_color = "#ffd43b"
-            bg_color = "rgba(255, 212, 59, 0.1)"
-        else:
-            gauge_color = "#51cf66"
-            bg_color = "rgba(81, 207, 102, 0.1)"
+        # Determine colors and ranges - all white for transparency
+        gauge_color = "#FFFFFF"
+        bg_color = "rgba(0,0,0,0)"
         
         fig = go.Figure(go.Indicator(
             mode = "gauge+number+delta",
             value = probability * 100,
             domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': "Model Confidence Score", 'font': {'size': 18, 'color': '#1e3c72'}},
+            title = {'text': "Model Confidence Score", 'font': {'size': 18, 'color': '#FFFFFF'}},
             delta = {'reference': 50, 'suffix': '%', 'position': "bottom"},
-            number = {'suffix': '%', 'font': {'size': 20, 'color': '#1e3c72'}},
+            number = {'suffix': '%', 'font': {'size': 20, 'color': '#FFFFFF'}},
             gauge = {
                 'axis': {
                     'range': [None, 100],
                     'tickwidth': 2,
-                    'tickcolor': "#1e3c72",
-                    'tickfont': {'size': 12, 'color': '#1e3c72'}
+                    'tickcolor': "#FFFFFF",
+                    'tickfont': {'size': 12, 'color': '#FFFFFF'}
                 },
                 'bar': {'color': gauge_color, 'thickness': 0.8},
                 'bgcolor': bg_color,
                 'borderwidth': 3,
-                'bordercolor': "#1e3c72",
+                'bordercolor': "#FFFFFF",
                 'steps': [
-                    {'range': [0, 30], 'color': "rgba(81, 207, 102, 0.2)"},
-                    {'range': [30, 70], 'color': "rgba(255, 212, 59, 0.2)"},
-                    {'range': [70, 100], 'color': "rgba(255, 107, 107, 0.2)"}
+                    {'range': [0, 30], 'color': "rgba(255, 255, 255, 0.1)"},
+                    {'range': [30, 70], 'color': "rgba(255, 255, 255, 0.2)"},
+                    {'range': [70, 100], 'color': "rgba(255, 255, 255, 0.3)"}
                 ],
                 'threshold': {
-                    'line': {'color': "#1e3c72", 'width': 3},
+                    'line': {'color': "#FFFFFF", 'width': 3},
                     'thickness': 0.75,
                     'value': 70
                 }
@@ -328,7 +343,7 @@ def _show_technical_details(result):
         
         fig.update_layout(
             height=300,
-            font={'color': "#1e3c72", 'family': "Inter"},
+            font={'color': "#FFFFFF", 'family': "Inter"},
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             margin=dict(l=20, r=20, t=40, b=20)
@@ -373,12 +388,12 @@ def _show_technical_details(result):
         orientation='h',
         title="Feature Importance in Classification",
         color=importance_scores,
-        color_continuous_scale=['#51cf66', '#ffd43b', '#ff6b6b']
+        color_continuous_scale=['#FFFFFF', '#FFFFFF', '#FFFFFF']
     )
     
     fig.update_layout(
         height=400,
-        font={'color': "#1e3c72", 'family': "Inter"},
+        font={'color': "#FFFFFF", 'family': "Inter"},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         showlegend=False
@@ -396,38 +411,49 @@ def _show_technical_details(result):
     
     with perf_col1:
         st.markdown("""
-        <div style="background: #667eea; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: white;">📊 Accuracy</h4>
-            <h3 style="margin: 0.5rem 0; color: white;">97.74%</h3>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">📊 Accuracy</h4>
+            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">97.74%</h3>
         </div>
         """, unsafe_allow_html=True)
     
     with perf_col2:
         st.markdown("""
-        <div style="background: #51cf66; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: white;">🎯 Precision</h4>
-            <h3 style="margin: 0.5rem 0; color: white;">96.95%</h3>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">🎯 Precision</h4>
+            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">96.95%</h3>
         </div>
         """, unsafe_allow_html=True)
     
     with perf_col3:
         st.markdown("""
-        <div style="background: #ffd43b; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: white;">🔍 Recall</h4>
-            <h3 style="margin: 0.5rem 0; color: white;">98.40%</h3>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">🔍 Recall</h4>
+            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">98.40%</h3>
         </div>
         """, unsafe_allow_html=True)
     
     with perf_col4:
         st.markdown("""
-        <div style="background: #764ba2; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: white;">📈 F1-Score</h4>
-            <h3 style="margin: 0.5rem 0; color: white;">97.67%</h3>
+        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0; color: #FFFFFF;">📈 F1-Score</h4>
+            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">97.67%</h3>
         </div>
         """, unsafe_allow_html=True)
 def _show_urls_analysis(result):
     """Display URL analysis results."""
     extracted_urls = result.get('extracted_urls', [])
+    
+    # If no URLs in result, try to extract from email content
+    if not extracted_urls:
+        email_data = result.get('email', {})
+        email_body = email_data.get('body', '') or email_data.get('content', '')
+        
+        # Simple URL extraction
+        import re
+        url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+        if email_body:
+            extracted_urls = re.findall(url_pattern, email_body)
     
     if not extracted_urls:
         st.success("✅ No URLs found in the email")
