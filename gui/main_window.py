@@ -53,113 +53,242 @@ class PhishingDetectorApp:
             initial_sidebar_state="collapsed"  # Collapse sidebar since we're using tabs
         )
         
-        # Custom CSS for dashboard-style tabs
+        # Enhanced CSS for modern dashboard with animations
         st.markdown("""
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* Global Styles */
+        .stApp {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Animated Header */
         .main-header {
-            background: linear-gradient(90deg, #1f4e79, #2d5aa0);
-            padding: 1rem;
-            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 2rem;
+            border-radius: 16px;
             color: white;
             text-align: center;
             margin-bottom: 2rem;
-        }
-        .risk-high {
-            background-color: #ffebee;
-            border-left: 5px solid #f44336;
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-        .risk-low {
-            background-color: #e8f5e8;
-            border-left: 5px solid #4caf50;
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-        .metric-card {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #dee2e6;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideDown 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
         }
         
-        /* Dashboard-style tabs */
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        .main-header h1 {
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-header p {
+            font-size: 1.2rem;
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        /* Animation Keyframes */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Enhanced Tabs */
         .stTabs [data-baseweb="tab-list"] {
-            gap: 8px;
-            background-color: #f8f9fa;
-            padding: 4px;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
         }
         
         .stTabs [data-baseweb="tab"] {
-            height: 50px;
-            padding: 0px 24px;
+            height: 55px;
+            padding: 0px 28px;
             background-color: transparent;
-            border-radius: 6px;
-            color: #6c757d;
-            font-weight: 500;
+            border-radius: 12px;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 1rem;
             border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stTabs [data-baseweb="tab"]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
         }
         
         .stTabs [aria-selected="true"] {
-            background-color: #007bff !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             color: white !important;
-            box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
         }
         
-        .stTabs [data-baseweb="tab"]:hover {
-            background-color: #e9ecef;
-            color: #495057;
+        .stTabs [aria-selected="true"]::before {
+            opacity: 1;
         }
         
-        .stTabs [aria-selected="true"]:hover {
-            background-color: #0056b3 !important;
-            color: white !important;
+        .stTabs [data-baseweb="tab"]:hover:not([aria-selected="true"]) {
+            background-color: rgba(102, 126, 234, 0.1) !important;
+            color: #667eea !important;
+            transform: translateY(-1px);
+        }
+        
+        /* Analysis Results Styling */
+        .analysis-result {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s ease-out;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Risk Level Styling */
+        .risk-high {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .risk-low {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(81, 207, 102, 0.3);
+        }
+        
+        .risk-medium {
+            background: linear-gradient(135deg, #ffd43b 0%, #fab005 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 20px rgba(255, 212, 59, 0.3);
+        }
+        
+        /* Enhanced Content Areas */
+        .stSelectbox > div > div {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .stTextArea > div > div > textarea {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        /* Button Styling */
+        .stButton > button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Content Cards */
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* Date Styling */
+        .analysis-date {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0.5rem 0;
         }
         </style>
         """, unsafe_allow_html=True)
         
-        # Header
+        # Enhanced Header with Animation
         st.markdown("""
         <div class="main-header">
-            <h1>🛡️ PhishSniffer - Advanced Email Security</h1>
-            <p>AI-Powered Phishing Detection & Analysis Platform</p>
+            <h1>🛡️ PhishSniffer</h1>
+            <p>Advanced Email Security & Phishing Detection Platform</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Dashboard metrics (like your image)
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
-                label="📧 Emails Analyzed",
-                value="5,097",
-                delta="+23.4%"
-            )
-        
-        with col2:
-            st.metric(
-                label="🚨 Threats Detected", 
-                value="47,403",
-                delta="-10.45%",
-                delta_color="inverse"
-            )
-        
-        with col3:
-            st.metric(
-                label="🎯 Detection Rate",
-                value="97.74%",
-                delta="+2.52%"
-            )
-        
-        with col4:
-            st.metric(
-                label="⚡ Avg Response Time",
-                value="45.4 min",
-                delta="+4.46%",
-                delta_color="inverse"
-            )
         
         # Check model status first
         if not st.session_state.get('model_loaded', False):

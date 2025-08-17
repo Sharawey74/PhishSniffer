@@ -210,106 +210,258 @@ Customer Service: support@company.com"""
         _display_analysis_results(st.session_state.analysis_results)
 
 def _display_analysis_results(result):
-    """Display the analysis results."""
-    st.subheader("📊 Analysis Results")
+    """Display the analysis results with enhanced styling."""
+    st.markdown('<div class="analysis-result">', unsafe_allow_html=True)
     
-    # Main verdict
+    # Enhanced Header with proper date formatting
+    analysis_time = result.get('timestamp')
+    if analysis_time:
+        try:
+            # Parse the ISO format timestamp and format it nicely
+            if isinstance(analysis_time, str):
+                from datetime import datetime
+                dt = datetime.fromisoformat(analysis_time.replace('T', ' '))
+                formatted_date = dt.strftime("%B %d, %Y at %I:%M %p")
+            else:
+                formatted_date = analysis_time
+        except:
+            formatted_date = str(analysis_time)
+    else:
+        formatted_date = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+    
+    st.markdown(f"""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="color: #1e3c72; margin-bottom: 0.5rem;">� Analysis Report</h2>
+        <h3 style="color: #64748b; font-weight: 500; margin-bottom: 0.5rem;">📧 Email Security Analysis</h3>
+        <div class="analysis-date">Analysis Date: {formatted_date}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Main verdict with enhanced styling
     probability = result.get('probability', 0)
     is_phishing = result['is_phishing']
     
     if is_phishing:
-        st.markdown(f"""
-        <div class="risk-high">
-            <h3>🚨 PHISHING DETECTED</h3>
-            <p><strong>Risk Level:</strong> HIGH</p>
-            <p><strong>Confidence:</strong> {probability:.1%}</p>
-            <p><strong>Recommendation:</strong> Do NOT click any links, download attachments, or reply to this email.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        risk_class = "risk-high"
+        icon = "🚨"
+        title = "PHISHING DETECTED"
+        level = "HIGH RISK"
+        recommendation = "⚠️ Do NOT click any links, download attachments, or reply to this email. Report to IT security immediately."
     else:
-        st.markdown(f"""
-        <div class="risk-low">
-            <h3>✅ NO PHISHING DETECTED</h3>
-            <p><strong>Risk Level:</strong> LOW</p>
-            <p><strong>Confidence:</strong> {(1-probability):.1%}</p>
-            <p><strong>Recommendation:</strong> Email appears legitimate, but always exercise caution.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        if probability > 0.3:
+            risk_class = "risk-medium"
+            icon = "⚠️"
+            title = "SUSPICIOUS CONTENT"
+            level = "MEDIUM RISK"
+            recommendation = "⚡ Exercise caution. Verify sender identity before taking any action."
+        else:
+            risk_class = "risk-low"
+            icon = "✅"
+            title = "EMAIL APPEARS SAFE"
+            level = "LOW RISK"
+            recommendation = "✓ Email appears legitimate, but always remain vigilant."
     
-    # Probability gauge
+    st.markdown(f"""
+    <div class="{risk_class}">
+        <h3 style="margin: 0; font-size: 1.5rem;">{icon} {title}</h3>
+        <p style="margin: 0.5rem 0; font-size: 1.1rem;"><strong>Risk Level:</strong> {level}</p>
+        <p style="margin: 0.5rem 0; font-size: 1.1rem;"><strong>Confidence:</strong> {probability:.1%}</p>
+        <p style="margin: 1rem 0 0 0; font-size: 1rem;">{recommendation}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Enhanced Probability visualization
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        # Create a gauge chart
+        # Create an enhanced gauge chart
         import plotly.graph_objects as go
         
+        # Determine color based on risk level
+        if probability >= 0.7:
+            gauge_color = "#ff6b6b"
+            bar_color = "#ff6b6b"
+        elif probability >= 0.3:
+            gauge_color = "#ffd43b"
+            bar_color = "#ffd43b"
+        else:
+            gauge_color = "#51cf66"
+            bar_color = "#51cf66"
+        
         fig = go.Figure(go.Indicator(
-            mode = "gauge+number",
+            mode = "gauge+number+delta",
             value = probability * 100,
             domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': "Phishing Probability (%)"},
+            title = {'text': "Phishing Risk Score", 'font': {'size': 20, 'color': '#1e3c72'}},
+            delta = {'reference': 50, 'suffix': '%'},
             gauge = {
-                'axis': {'range': [None, 100]},
-                'bar': {'color': "red" if is_phishing else "green"},
+                'axis': {
+                    'range': [None, 100],
+                    'tickwidth': 2,
+                    'tickcolor': "#1e3c72",
+                    'tickfont': {'size': 12, 'color': '#1e3c72'}
+                },
+                'bar': {'color': bar_color, 'thickness': 0.8},
+                'bgcolor': "rgba(255,255,255,0.8)",
+                'borderwidth': 3,
+                'bordercolor': "#1e3c72",
                 'steps': [
-                    {'range': [0, 30], 'color': "lightgreen"},
-                    {'range': [30, 70], 'color': "yellow"},
-                    {'range': [70, 100], 'color': "lightcoral"}
+                    {'range': [0, 30], 'color': "rgba(81, 207, 102, 0.3)"},
+                    {'range': [30, 70], 'color': "rgba(255, 212, 59, 0.3)"},
+                    {'range': [70, 100], 'color': "rgba(255, 107, 107, 0.3)"}
                 ],
                 'threshold': {
-                    'line': {'color': "red", 'width': 4},
+                    'line': {'color': "#1e3c72", 'width': 3},
                     'thickness': 0.75,
                     'value': 70
                 }
             }
         ))
-        fig.update_layout(height=300)
+        
+        fig.update_layout(
+            height=350,
+            font={'color': "#1e3c72", 'family': "Inter"},
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+        
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
-        # Confidence level and details
+        # Enhanced metrics display
+        st.markdown("""
+        <div class="content-card">
+            <h4 style="color: #1e3c72; margin-bottom: 1rem;">📈 Analysis Metrics</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
         details = result.get('details', {})
         confidence = details.get('confidence_level', 'Unknown')
         
-        st.metric("Confidence Level", confidence)
-        st.metric("Prediction Score", f"{probability:.3f}")
-        st.metric("Classification", "Phishing" if is_phishing else "Legitimate")
-    
-    # Detailed analysis
-    if details:
-        st.subheader("🔍 Detailed Analysis")
+        # Create enhanced metrics
+        col2_1, col2_2 = st.columns(2)
         
-        # Risk factors
+        with col2_1:
+            st.metric(
+                "Confidence Level", 
+                confidence,
+                help="How confident the model is in its prediction"
+            )
+            st.metric(
+                "Risk Score", 
+                f"{probability:.3f}",
+                help="Numerical risk score (0-1)"
+            )
+        
+        with col2_2:
+            classification = "⚠️ Phishing" if is_phishing else "✅ Legitimate"
+            st.metric(
+                "Classification", 
+                classification,
+                help="Final classification result"
+            )
+            
+            # Calculate risk percentage for display
+            risk_percent = f"{probability*100:.1f}%"
+            st.metric(
+                "Risk Level", 
+                risk_percent,
+                help="Percentage risk assessment"
+            )
+    
+    # Enhanced Detailed Analysis Section
+    st.markdown("""
+    <div class="content-card">
+        <h4 style="color: #1e3c72; margin-bottom: 1rem;">🔍 Detailed Analysis</h4>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Create tabs for different analysis aspects
+    detail_tab1, detail_tab2, detail_tab3 = st.tabs(["🚨 Risk Factors", "🔍 Features Detected", "🌐 URLs Found"])
+    
+    with detail_tab1:
         risk_factors = details.get('risk_factors', [])
         if risk_factors:
-            st.write("**Risk Factors Found:**")
-            for factor in risk_factors:
-                st.write(f"• {factor}")
-        
-        # Features detected
+            st.markdown("**Identified Risk Factors:**")
+            for i, factor in enumerate(risk_factors, 1):
+                st.markdown(f"""
+                <div style="background: rgba(255, 107, 107, 0.1); padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #ff6b6b;">
+                    <strong>{i}.</strong> {factor}
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("✅ No specific risk factors detected in this email.")
+    
+    with detail_tab2:
         features = details.get('features_detected', [])
         if features:
-            st.write("**Features Detected:**")
-            for feature in features:
-                st.write(f"• {feature}")
+            st.markdown("**Features Detected:**")
+            for i, feature in enumerate(features, 1):
+                st.markdown(f"""
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong>{i}.</strong> {feature}
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("ℹ️ No suspicious features detected.")
+    
+    with detail_tab3:
+        # Extract URLs from email content if available
+        import re
+        email_content = details.get('email_content', '')
+        urls = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', str(email_content))
         
-        if not risk_factors and not features:
-            st.info("No specific risk factors or suspicious features detected.")
+        if urls:
+            st.markdown("**URLs Found in Email:**")
+            for i, url in enumerate(urls, 1):
+                # Determine URL risk based on analysis result
+                url_risk = "High" if is_phishing else "Low"
+                risk_color = "#ff6b6b" if is_phishing else "#51cf66"
+                
+                st.markdown(f"""
+                <div style="background: rgba(255, 255, 255, 0.8); padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <strong>{i}.</strong> <code>{url}</code>
+                        </div>
+                        <div style="background: {risk_color}; color: white; padding: 0.2rem 0.8rem; border-radius: 12px; font-size: 0.8rem;">
+                            {url_risk} Risk
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("🔗 No URLs found in this email.")
     
-    # Feedback section
-    st.subheader("💬 Feedback")
-    st.write("Help us improve by providing feedback on this analysis:")
+    # Enhanced Feedback Section
+    st.markdown("""
+    <div class="content-card">
+        <h4 style="color: #1e3c72; margin-bottom: 1rem;">💬 Help Us Improve</h4>
+        <p style="color: #64748b; margin-bottom: 1rem;">Your feedback helps train our AI to become more accurate:</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
-        if st.button("Report as Phishing 🚨", use_container_width=True):
-            st.success("Thank you for reporting this as phishing. This feedback will help improve our model.")
+        if st.button("🚨 Report Phishing", use_container_width=True, help="Mark this email as phishing"):
+            st.success("✅ Reported as phishing. Thank you for helping improve our detection!")
     
     with col2:
-        if st.button("Mark as Safe ✅", use_container_width=True):
-            st.success("Thank you for confirming this email is safe. This feedback will help improve our model.")
+        if st.button("✅ Mark as Safe", use_container_width=True, help="Confirm this email is legitimate"):
+            st.success("✅ Marked as safe. Thank you for the feedback!")
     
-    # Timestamp
-    st.caption(f"Analysis performed at: {result.get('timestamp', 'Unknown')}")
+    with col3:
+        if st.button("❓ Uncertain", use_container_width=True, help="Not sure about this classification"):
+            st.info("📝 Uncertainty noted. We'll review this case for improvement.")
+    
+    # Enhanced timestamp with proper styling
+    st.markdown(f"""
+    <div style="text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e9ecef;">
+        <div class="analysis-date">Analysis completed on {formatted_date}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
