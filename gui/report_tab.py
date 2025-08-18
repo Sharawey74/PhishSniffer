@@ -148,7 +148,7 @@ def show_report_tab(app):
     # Export options
     st.subheader("📤 Export Options")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         if st.button("📄 Export as PDF", use_container_width=True):
@@ -157,10 +157,6 @@ def show_report_tab(app):
     with col2:
         if st.button("📊 Export as CSV", use_container_width=True):
             _export_csv_report(result)
-    
-    with col3:
-        if st.button("📋 Copy Summary", use_container_width=True):
-            _copy_summary(result)
 
 def _show_risk_factors(result):
     """Display enhanced risk factors and suspicious indicators."""
@@ -403,43 +399,7 @@ def _show_technical_details(result):
     fig.update_yaxes(title="Features")
     
     st.plotly_chart(fig, use_container_width=True)
-    
-    # Model performance summary
-    st.markdown("#### 🎯 Model Performance Metrics")
-    
-    perf_col1, perf_col2, perf_col3, perf_col4 = st.columns(4)
-    
-    with perf_col1:
-        st.markdown("""
-        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: #FFFFFF;">📊 Accuracy</h4>
-            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">97.74%</h3>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with perf_col2:
-        st.markdown("""
-        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: #FFFFFF;">🎯 Precision</h4>
-            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">96.95%</h3>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with perf_col3:
-        st.markdown("""
-        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: #FFFFFF;">🔍 Recall</h4>
-            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">98.40%</h3>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with perf_col4:
-        st.markdown("""
-        <div style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; padding: 1rem; border-radius: 8px; text-align: center;">
-            <h4 style="margin: 0; color: #FFFFFF;">📈 F1-Score</h4>
-            <h3 style="margin: 0.5rem 0; color: #FFFFFF;">97.67%</h3>
-        </div>
-        """, unsafe_allow_html=True)
+
 def _show_urls_analysis(result):
     """Display URL analysis results."""
     extracted_urls = result.get('extracted_urls', [])
@@ -517,75 +477,171 @@ def _show_urls_analysis(result):
                     st.success(f"**Risk Level**: {risk}")
 
 def _show_email_content(result):
-    """Display email content analysis."""
+    """Display enhanced email content analysis with better formatting."""
     email_data = result.get('email', {})
+    details = result.get('details', {})
     
-    if not email_data:
-        st.warning("Email content not available")
+    # Try to get email content from various sources
+    email_content = details.get('email_content', '') or email_data.get('body', '') or email_data.get('content', '')
+    
+    if not email_content and not email_data:
+        st.info("💡 Email content analysis not available. Paste email content in the Analyze tab for detailed content analysis.")
         return
     
-    # Email headers
+    # Enhanced Email headers section
     st.markdown("#### 📧 Email Headers")
     
-    headers_to_show = ['from', 'to', 'subject', 'date', 'reply-to', 'return-path']
+    # Parse headers from email content if available
+    parsed_headers = {}
+    if email_content:
+        lines = email_content.split('\n')
+        for line in lines[:20]:  # Check first 20 lines for headers
+            if ':' in line and not line.startswith(' ') and not line.startswith('\t'):
+                key, value = line.split(':', 1)
+                parsed_headers[key.lower().strip()] = value.strip()
     
-    for header in headers_to_show:
-        value = email_data.get(header, 'Not available')
+    # Combine with existing email_data
+    all_headers = {**email_data, **parsed_headers}
+    
+    headers_to_show = [
+        ('from', 'From'),
+        ('to', 'To'), 
+        ('subject', 'Subject'),
+        ('date', 'Date'),
+        ('reply-to', 'Reply-To'),
+        ('return-path', 'Return-Path'),
+        ('message-id', 'Message-ID'),
+        ('x-mailer', 'X-Mailer')
+    ]
+    
+    # Display headers in a nice format
+    for header_key, header_label in headers_to_show:
+        value = all_headers.get(header_key, '')
         if value and value != 'Not available':
-            st.write(f"**{header.title()}**: {value}")
+            # Color code suspicious elements
+            display_value = value
+            if header_key in ['from', 'reply-to', 'return-path']:
+                # Highlight potential mismatches or suspicious domains
+                if any(suspicious in value.lower() for suspicious in ['bit.ly', 'tinyurl', 'suspicious', 'phishing']):
+                    display_value = f"🚨 {value}"
+                elif '@' in value:
+                    display_value = f"📧 {value}"
+            
+            st.markdown(f"""
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 0.8rem; margin: 0.3rem 0; border-radius: 8px; color: #FFFFFF;">
+                <strong style="color: #FFFFFF;">{header_label}:</strong> <span style="color: #FFFFFF;">{display_value}</span>
+            </div>
+            """, unsafe_allow_html=True)
     
-    # Email body analysis
+    # Enhanced Email body analysis
     st.markdown("#### 📝 Content Analysis")
     
-    body = email_data.get('body', '')
-    if body:
-        # Content statistics
-        col1, col2, col3 = st.columns(3)
+    if email_content:
+        # Advanced content statistics
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("Character Count", len(body))
+            char_count = len(email_content)
+            st.markdown(f"""
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 8px; text-align: center; color: #FFFFFF;">
+                <h4 style="margin: 0; color: #FFFFFF;">📊 Characters</h4>
+                <h3 style="margin: 0.5rem 0; color: #FFFFFF;">{char_count:,}</h3>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col2:
-            word_count = len(body.split())
-            st.metric("Word Count", word_count)
+            word_count = len(email_content.split())
+            st.markdown(f"""
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 8px; text-align: center; color: #FFFFFF;">
+                <h4 style="margin: 0; color: #FFFFFF;">📝 Words</h4>
+                <h3 style="margin: 0.5rem 0; color: #FFFFFF;">{word_count:,}</h3>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col3:
-            line_count = len(body.split('\n'))
-            st.metric("Line Count", line_count)
+            line_count = len(email_content.split('\n'))
+            st.markdown(f"""
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 8px; text-align: center; color: #FFFFFF;">
+                <h4 style="margin: 0; color: #FFFFFF;">📄 Lines</h4>
+                <h3 style="margin: 0.5rem 0; color: #FFFFFF;">{line_count:,}</h3>
+            </div>
+            """, unsafe_allow_html=True)
         
-        # Show content in expandable section
-        with st.expander("View Email Body"):
-            st.text_area("Email Content", body, height=300, disabled=True)
+        with col4:
+            # Count URLs
+            import re
+            url_count = len(re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', email_content))
+            st.markdown(f"""
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 8px; text-align: center; color: #FFFFFF;">
+                <h4 style="margin: 0; color: #FFFFFF;">🔗 URLs</h4>
+                <h3 style="margin: 0.5rem 0; color: #FFFFFF;">{url_count}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Content preview with better formatting
+        st.markdown("#### 📖 Email Content Preview")
+        
+        # Clean and format the email content
+        preview_content = email_content
+        
+        # Truncate if too long
+        if len(preview_content) > 2000:
+            preview_content = preview_content[:2000] + "\n\n... [Content truncated for display]"
+        
+        # Display in a nice styled container
+        st.markdown(f"""
+        <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1.5rem; border-radius: 12px; max-height: 400px; overflow-y: auto; color: #FFFFFF;">
+            <pre style="color: #FFFFFF; font-family: 'Courier New', monospace; white-space: pre-wrap; margin: 0;">{preview_content}</pre>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Language and content analysis
+        st.markdown("#### 🔍 Content Features Analysis")
+        
+        feature_analysis = []
+        
+        # Check for suspicious patterns
+        urgent_words = ['urgent', 'immediately', 'act now', 'expires', 'limited time', 'asap']
+        urgent_count = sum(email_content.lower().count(word) for word in urgent_words)
+        if urgent_count > 0:
+            feature_analysis.append(("🚨 Urgency Indicators", f"{urgent_count} instances found"))
+        else:
+            feature_analysis.append(("✅ Urgency Language", "No urgent language detected"))
+        
+        # Check for money/financial terms
+        money_words = ['$', 'money', 'payment', 'bank', 'credit card', 'prize', 'winner']
+        money_count = sum(email_content.lower().count(word) for word in money_words)
+        if money_count > 0:
+            feature_analysis.append(("💰 Financial Terms", f"{money_count} instances found"))
+        
+        # Check for suspicious requests
+        request_words = ['click here', 'download', 'verify', 'confirm', 'update', 'login']
+        request_count = sum(email_content.lower().count(word) for word in request_words)
+        if request_count > 0:
+            feature_analysis.append(("⚠️ Action Requests", f"{request_count} instances found"))
+        
+        # Check for personal info requests
+        personal_words = ['ssn', 'social security', 'password', 'pin', 'account number']
+        personal_count = sum(email_content.lower().count(word) for word in personal_words)
+        if personal_count > 0:
+            feature_analysis.append(("🔐 Personal Info Requests", f"{personal_count} instances found"))
+        
+        # Check capitalization (shouting)
+        caps_ratio = sum(1 for c in email_content if c.isupper()) / max(len(email_content), 1)
+        if caps_ratio > 0.1:
+            feature_analysis.append(("📢 Excessive Capitalization", f"{caps_ratio:.1%} of characters"))
+        
+        # Display feature analysis
+        for feature_name, feature_value in feature_analysis:
+            color = "#ff6b6b" if any(indicator in feature_name for indicator in ["🚨", "💰", "⚠️", "🔐", "📢"]) else "#51cf66"
+            st.markdown(f"""
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-left: 4px solid {color}; padding: 0.8rem; margin: 0.3rem 0; border-radius: 8px; color: #FFFFFF;">
+                <strong style="color: #FFFFFF;">{feature_name}:</strong> <span style="color: #FFFFFF;">{feature_value}</span>
+            </div>
+            """, unsafe_allow_html=True)
     
-    # Content features
-    if email_data:
-        st.markdown("#### 🔍 Content Features")
-        
-        feature_info = []
-        
-        # Check for various features
-        if 'urgent_words' in email_data:
-            feature_info.append(("Urgent Language", "Yes" if email_data['urgent_words'] else "No"))
-        
-        if 'suspicious_words' in email_data:
-            feature_info.append(("Suspicious Words", "Yes" if email_data['suspicious_words'] else "No"))
-        
-        if 'html_content' in email_data:
-            feature_info.append(("HTML Content", "Yes" if email_data['html_content'] else "No"))
-        
-        if 'attachments' in email_data:
-            feature_info.append(("Attachments", "Yes" if email_data['attachments'] else "No"))
-        
-        if feature_info:
-            for feature, value in feature_info:
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"**{feature}**")
-                with col2:
-                    if value == "Yes":
-                        st.warning(value)
-                    else:
-                        st.success(value)
+    else:
+        st.info("📧 Email content not available in current analysis. For detailed content analysis, ensure the full email is pasted in the Analyze tab.")
 
 def _analyze_url_risk(url):
     """Analyze URL for risk factors."""
@@ -631,9 +687,168 @@ def _extract_domain(url):
         return domain_part.split('/')[0].split('?')[0]
 
 def _export_pdf_report(result):
-    """Export analysis report as PDF."""
-    st.info("PDF export functionality would be implemented here")
-    # This would require additional libraries like reportlab or weasyprint
+    """Export analysis report as PDF using HTML to PDF conversion."""
+    try:
+        from datetime import datetime
+        import base64
+        
+        # Get analysis details
+        is_phishing = result.get('is_phishing', False)
+        probability = result.get('probability', 0)
+        timestamp = result.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        details = result.get('details', {})
+        extracted_urls = result.get('extracted_urls', [])
+        
+        # Format timestamp for display
+        try:
+            if isinstance(timestamp, str):
+                dt = datetime.fromisoformat(timestamp.replace('T', ' '))
+                formatted_date = dt.strftime("%B %d, %Y at %I:%M %p")
+            else:
+                formatted_date = str(timestamp)
+        except:
+            formatted_date = str(timestamp)
+        
+        # Generate HTML report
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>PhishSniffer Analysis Report</title>
+            <style>
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; }}
+                .header {{ text-align: center; margin-bottom: 30px; border-bottom: 2px solid #004cc5; padding-bottom: 20px; }}
+                .header h1 {{ color: #004cc5; margin: 0; }}
+                .header p {{ color: #666; margin: 5px 0; }}
+                .verdict {{ padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center; }}
+                .verdict.high-risk {{ background-color: #ffe6e6; border: 2px solid #ff6b6b; }}
+                .verdict.medium-risk {{ background-color: #fff3cd; border: 2px solid #ffd43b; }}
+                .verdict.low-risk {{ background-color: #e8f5e8; border: 2px solid #51cf66; }}
+                .verdict h2 {{ margin: 0; }}
+                .section {{ margin: 25px 0; }}
+                .section h3 {{ color: #004cc5; border-bottom: 1px solid #eee; padding-bottom: 5px; }}
+                .metrics {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }}
+                .metric {{ padding: 15px; background-color: #f8f9fa; border-radius: 8px; text-align: center; }}
+                .metric-label {{ font-size: 14px; color: #666; margin-bottom: 5px; }}
+                .metric-value {{ font-size: 24px; font-weight: bold; color: #004cc5; }}
+                .url-list {{ background-color: #f8f9fa; padding: 15px; border-radius: 8px; }}
+                .url-item {{ margin: 10px 0; padding: 10px; background-color: white; border-radius: 5px; }}
+                .risk-factors {{ background-color: #f8f9fa; padding: 15px; border-radius: 8px; }}
+                .risk-factor {{ margin: 8px 0; padding: 8px; background-color: #ffe6e6; border-left: 4px solid #ff6b6b; }}
+                .footer {{ margin-top: 40px; text-align: center; color: #666; border-top: 1px solid #eee; padding-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🛡️ PhishSniffer Analysis Report</h1>
+                <p>Advanced Email Security Analysis</p>
+                <p>Generated on: {formatted_date}</p>
+            </div>
+            
+            <div class="verdict {'high-risk' if is_phishing else ('medium-risk' if probability > 0.3 else 'low-risk')}">
+                <h2>{'🚨 PHISHING DETECTED' if is_phishing else ('⚠️ SUSPICIOUS CONTENT' if probability > 0.3 else '✅ EMAIL APPEARS SAFE')}</h2>
+                <p><strong>Risk Level:</strong> {'HIGH RISK' if is_phishing else ('MEDIUM RISK' if probability > 0.3 else 'LOW RISK')}</p>
+                <p><strong>Confidence:</strong> {probability:.1%}</p>
+            </div>
+            
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">Classification</div>
+                    <div class="metric-value">{'Phishing' if is_phishing else 'Legitimate'}</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Risk Score</div>
+                    <div class="metric-value">{probability:.3f}</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">URLs Found</div>
+                    <div class="metric-value">{len(extracted_urls)}</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Risk Factors</div>
+                    <div class="metric-value">{len(details.get('risk_factors', []))}</div>
+                </div>
+            </div>
+        """
+        
+        # Add risk factors section
+        risk_factors = details.get('risk_factors', [])
+        if risk_factors:
+            html_content += """
+            <div class="section">
+                <h3>🚨 Risk Factors Identified</h3>
+                <div class="risk-factors">
+            """
+            for factor in risk_factors:
+                html_content += f'<div class="risk-factor">{factor}</div>'
+            html_content += "</div></div>"
+        
+        # Add URLs section
+        if extracted_urls:
+            html_content += """
+            <div class="section">
+                <h3>🔗 URLs Found</h3>
+                <div class="url-list">
+            """
+            for i, url in enumerate(extracted_urls, 1):
+                url_risk = "High" if is_phishing else ("Medium" if probability > 0.3 else "Low")
+                html_content += f"""
+                <div class="url-item">
+                    <strong>{i}.</strong> {url}
+                    <span style="float: right; background: {'#ff6b6b' if url_risk == 'High' else '#ffd43b' if url_risk == 'Medium' else '#51cf66'}; 
+                          color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">{url_risk} Risk</span>
+                </div>
+                """
+            html_content += "</div></div>"
+        
+        # Add features section
+        features_detected = details.get('features_detected', [])
+        if features_detected:
+            html_content += """
+            <div class="section">
+                <h3>🔍 Features Detected</h3>
+                <div class="risk-factors">
+            """
+            for feature in features_detected:
+                html_content += f'<div style="margin: 8px 0; padding: 8px; background-color: #e6f3ff; border-left: 4px solid #004cc5;">{feature}</div>'
+            html_content += "</div></div>"
+        
+        # Add recommendation section
+        html_content += f"""
+            <div class="section">
+                <h3>📋 Recommendation</h3>
+                <div style="padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                    {'⚠️ DO NOT click any links, download attachments, or reply to this email. Report to IT security immediately.' if is_phishing else 
+                     '⚡ Exercise caution. Verify sender identity before taking any action.' if probability > 0.3 else
+                     '✓ Email appears legitimate, but always remain vigilant.'}
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Report generated by PhishSniffer v1.0.0</p>
+                <p>© 2025 PhishSniffer Team - Advanced Email Security Platform</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Provide download button for HTML (can be converted to PDF by browser)
+        st.download_button(
+            label="📄 Download PDF Report (HTML)",
+            data=html_content,
+            file_name=f"phishing_analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+            mime="text/html"
+        )
+        
+        st.success("✅ Report generated! Download the HTML file and use your browser's 'Print to PDF' feature for PDF conversion.")
+        
+        # Show preview
+        with st.expander("📋 Preview Report"):
+            st.components.v1.html(html_content, height=600, scrolling=True)
+        
+    except Exception as e:
+        st.error(f"Error generating PDF report: {e}")
+        st.info("💡 Tip: You can copy the analysis summary manually or use the CSV export option.")
 
 def _export_csv_report(result):
     """Export analysis data as CSV."""
@@ -656,27 +871,3 @@ def _export_csv_report(result):
         file_name=f"phishing_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv"
     )
-
-def _copy_summary(result):
-    """Copy analysis summary to clipboard."""
-    is_phishing = result.get('is_phishing', False)
-    probability = result.get('probability', 0)
-    timestamp = result.get('timestamp', '')
-    source = result.get('source', '')
-    
-    summary = f"""
-PhishSniffer Analysis Summary
-============================
-Date: {timestamp}
-Source: {source}
-Result: {"PHISHING DETECTED" if is_phishing else "LEGITIMATE EMAIL"}
-Confidence: {probability:.1%}
-Risk Factors: {len(result.get('indicators', []))}
-URLs Found: {len(result.get('extracted_urls', []))}
-
-Recommendation: {"DO NOT interact with this email" if is_phishing else "Exercise normal caution"}
-"""
-    
-    # In a real implementation, this would copy to clipboard
-    st.code(summary)
-    st.success("Summary text displayed above (clipboard functionality would be implemented)")

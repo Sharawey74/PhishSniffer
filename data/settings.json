@@ -1,0 +1,7 @@
+{
+  "risk_threshold": 0.5,
+  "auto_save": true,
+  "url_checking": true,
+  "show_notifications": true,
+  "sound_alerts": true
+}

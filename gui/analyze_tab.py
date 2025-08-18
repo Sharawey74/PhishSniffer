@@ -187,10 +187,43 @@ Customer Service: support@company.com"""
                     result.get('probability', 0.5)
                 )
                 
-                # Extract and store URLs
-                urls = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', email_content)
-                if urls:
-                    for url in urls:
+                # Extract and store URLs from email content
+                extracted_urls = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', email_content)
+                
+                # Store URLs in the result for consistency
+                if 'extracted_urls' not in result:
+                    result['extracted_urls'] = extracted_urls
+                
+                # Also store in details for display consistency
+                if 'details' not in result:
+                    result['details'] = {}
+                result['details']['extracted_urls'] = extracted_urls
+                result['details']['email_content'] = email_content
+                
+                # Update features detected to accurately reflect URL count
+                if 'details' in result and 'features_detected' in result['details']:
+                    features = result['details']['features_detected']
+                    # Update or add URL count feature
+                    url_count = len(extracted_urls)
+                    url_feature = f"Contains {url_count} URL(s)" if url_count > 0 else "No URLs detected"
+                    
+                    # Replace any existing URL count feature or add new one
+                    updated_features = []
+                    url_feature_added = False
+                    for feature in features:
+                        if "URL(s)" in feature or "urls" in feature.lower():
+                            updated_features.append(url_feature)
+                            url_feature_added = True
+                        else:
+                            updated_features.append(feature)
+                    
+                    if not url_feature_added and url_count > 0:
+                        updated_features.append(url_feature)
+                    
+                    result['details']['features_detected'] = updated_features
+                
+                if extracted_urls:
+                    for url in extracted_urls:
                         url_entry = {
                             'url': url,
                             'source': 'email analysis',
@@ -419,25 +452,63 @@ def _display_analysis_results(result):
             st.info("ℹ️ No suspicious features detected.")
     
     with detail_tab3:
-        # Extract URLs from email content if available
-        import re
-        email_content = details.get('email_content', '')
-        urls = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', str(email_content))
+        # Get URLs from result data for consistency
+        extracted_urls = result.get('extracted_urls', [])
         
-        if urls:
+        # Also check details for backward compatibility
+        if not extracted_urls and 'details' in result:
+            extracted_urls = result['details'].get('extracted_urls', [])
+        
+        # Fallback: extract from email content if available
+        if not extracted_urls:
+            email_content = result.get('email_content', '')
+            if not email_content and 'details' in result:
+                email_content = result['details'].get('email_content', '')
+            
+            if email_content:
+                extracted_urls = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', str(email_content))
+        
+        if extracted_urls:
             st.markdown("**URLs Found in Email:**")
-            for i, url in enumerate(urls, 1):
+            
+            # Create a proper table display for URLs
+            url_data = []
+            for i, url in enumerate(extracted_urls, 1):
                 # Determine URL risk based on analysis result
-                url_risk = "High" if is_phishing else "Low"
-                risk_color = "#ff6b6b" if is_phishing else "#51cf66"
+                url_risk = "High" if is_phishing else ("Medium" if probability > 0.3 else "Low")
+                risk_color = "#ff6b6b" if url_risk == "High" else ("#ffd43b" if url_risk == "Medium" else "#51cf66")
+                
+                # Extract domain for better display
+                try:
+                    from urllib.parse import urlparse
+                    domain = urlparse(url).netloc or "Unknown"
+                except:
+                    domain = "Unknown"
+                
+                url_data.append({
+                    '#': i,
+                    'URL': url,
+                    'Domain': domain,
+                    'Risk Level': url_risk
+                })
+            
+            # Display as dataframe for better formatting
+            df = pd.DataFrame(url_data)
+            st.dataframe(df, use_container_width=True)
+            
+            # Also show individual URL cards for detailed view
+            st.markdown("**Detailed URL Analysis:**")
+            for i, url in enumerate(extracted_urls, 1):
+                url_risk = "High" if is_phishing else ("Medium" if probability > 0.3 else "Low")
+                risk_color = "#ff6b6b" if url_risk == "High" else ("#ffd43b" if url_risk == "Medium" else "#51cf66")
                 
                 st.markdown(f"""
-                <div style="background: rgba(255, 255, 255, 0.8); padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="flex: 1;">
-                            <strong>{i}.</strong> <code>{url}</code>
+                <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem; margin: 0.5rem 0; border-radius: 8px; color: #FFFFFF;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 0; margin-right: 1rem;">
+                            <strong style="color: #FFFFFF;">{i}.</strong> <code style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; color: #FFFFFF; word-break: break-all;">{url}</code>
                         </div>
-                        <div style="background: {risk_color}; color: white; padding: 0.2rem 0.8rem; border-radius: 12px; font-size: 0.8rem;">
+                        <div style="background: {risk_color}; color: white; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.8rem; white-space: nowrap;">
                             {url_risk} Risk
                         </div>
                     </div>

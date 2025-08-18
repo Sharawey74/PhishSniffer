@@ -200,21 +200,6 @@ def _show_app_settings(app):
         help="Check URLs against reputation databases"
     )
     
-    # Notification settings
-    st.write("**Notification Settings**")
-    
-    show_notifications = st.checkbox(
-        "Show desktop notifications",
-        value=True,
-        help="Display notifications for high-risk emails"
-    )
-    
-    sound_alerts = st.checkbox(
-        "Enable sound alerts",
-        value=False,
-        help="Play sound for critical threats"
-    )
-    
     # Data management
     st.write("**Data Management**")
     
@@ -241,9 +226,7 @@ def _show_app_settings(app):
         _save_app_settings(app, {
             'risk_threshold': risk_threshold,
             'auto_save': auto_save,
-            'url_checking': url_checking,
-            'show_notifications': show_notifications,
-            'sound_alerts': sound_alerts
+            'url_checking': url_checking
         })
         st.success("Settings saved successfully!")
 
