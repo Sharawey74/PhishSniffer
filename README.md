@@ -211,13 +211,4 @@ Developed by:
 
 *Arab Academy for Science, Technology and Maritime Transport (AASTMT)*
 
-## 🆘 Support
-
-For issues, questions, or feature requests:
-- 📧 Email: [support@phishsniffer.com]
-- 🐛 Issues: [GitHub Issues](https://github.com/LujainHesham/PhishingEmailDetector/issues)
-- 📖 Documentation: [Project Wiki](https://github.com/LujainHesham/PhishingEmailDetector/wiki)
-
----
-
 *This tool is designed for security research and legitimate email security purposes only.*
