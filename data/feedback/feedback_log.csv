@@ -1,5 +1,3 @@
-timestamp,source,original_classification,user_feedback,sender
-2025-07-23 23:10:10,manual input,safe,phishing,Amazon Rewards <promo@amazon-prizes.club>
-2025-07-23 23:10:10,manual input,safe,phishing,Amazon Rewards <promo@amazon-prizes.club>
-2025-07-23 23:27:18,manual input,safe,phishing,Amazon Rewards <promo@amazon-prizes.club>
-2025-07-23 23:27:18,manual input,safe,phishing,Amazon Rewards <promo@amazon-prizes.club>
+version https://git-lfs.github.com/spec/v1
+oid sha256:586eadff49fc193209d68c027df7e5ecee8f25e6d4b0cc7275b7681c6604cbec
+size 418
