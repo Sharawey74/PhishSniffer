@@ -41,21 +41,13 @@ def _show_model_information(app):
         st.write("**Last Updated:**")
         st.write("**Features Used:**")
         st.write("**Training Data:**")
-        st.write("**Datasets:**")
     
     with col2:
         st.write(model_metadata.get("model_type", "Random Forest Classifier"))
-        st.write(model_metadata.get("version", "1.0.0"))
+        st.write(model_metadata.get("version", "2.0.0"))
         st.write(model_metadata.get("last_updated", datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         st.write(str(model_metadata.get("features_used", 10)))
         st.write(str(model_metadata.get("training_data_size", "Custom datasets")))
-        
-        datasets = model_metadata.get("dataset_files", ["CEAS_08.csv", "Nigerian_Fraud.csv", "Nazario.csv"])
-        if isinstance(datasets, list):
-            for dataset in datasets:
-                st.write(f"• {dataset}")
-        else:
-            st.write(str(datasets))
     
     # Training controls
     st.write("**Model Training Controls**")
