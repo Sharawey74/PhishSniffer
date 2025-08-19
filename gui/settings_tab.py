@@ -151,11 +151,11 @@ def _show_about_section(app):
     
     with col1:
         if st.button("📖 Documentation"):
-            webbrowser.open("https://github.com/Sharawey74/phishing-detector")
+            webbrowser.open("https://github.com/Sharawey74/PhishSniffer/blob/main/README.md")
     
     with col2:
         if st.button("🐛 Report Issue"):
-            webbrowser.open("https://github.com/Sharawey74/phishing-detector/issues")
+            webbrowser.open("https://github.com/Sharawey74/PhishSniffer/issues")
     
     # Copyright
     current_user = getattr(app, 'current_user', 'PhishSniffer Team')
