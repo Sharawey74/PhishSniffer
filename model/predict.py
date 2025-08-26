@@ -23,40 +23,87 @@ class PhishingPredictor:
     
     def load_model(self, model_name=None):
         """Load a trained model and feature extractor."""
-        if model_name is None:
-            # Find the most recent model
-            model_files = [f for f in os.listdir(self.model_dir) if f.endswith('.joblib') and not 'feature_extractor' in f]
-            if not model_files:
-                raise FileNotFoundError("No trained models found")
+        try:
+            if not os.path.exists(self.model_dir):
+                print(f"⚠️ Model directory not found: {self.model_dir}")
+                return self._create_fallback_model()
             
-            # Get the most recent model based on filename timestamp
-            model_files.sort(reverse=True)
-            model_name = model_files[0].replace('.joblib', '')
+            if model_name is None:
+                # Find the most recent model
+                model_files = [f for f in os.listdir(self.model_dir) 
+                             if f.endswith('.joblib') and not 'feature_extractor' in f]
+                if not model_files:
+                    print("⚠️ No trained models found, creating fallback model")
+                    return self._create_fallback_model()
+                
+                # Get the most recent model based on filename timestamp
+                model_files.sort(reverse=True)
+                model_name = model_files[0].replace('.joblib', '')
+            
+            # Load model
+            model_path = os.path.join(self.model_dir, f"{model_name}.joblib")
+            if not os.path.exists(model_path):
+                print(f"⚠️ Model not found: {model_path}, creating fallback")
+                return self._create_fallback_model()
+            
+            self.model = joblib.load(model_path)
+            print(f"✓ Loaded model: {model_path}")
+            
+            # Load feature extractor
+            feature_extractor_path = os.path.join(self.model_dir, f"{model_name}_feature_extractor.joblib")
+            if os.path.exists(feature_extractor_path):
+                self.feature_extractor = joblib.load(feature_extractor_path)
+                print(f"✓ Loaded feature extractor: {feature_extractor_path}")
+            else:
+                print(f"⚠ Feature extractor not found: {feature_extractor_path}")
+            
+            # Load metadata
+            metadata_path = os.path.join(self.model_dir, f"{model_name}_metadata.json")
+            if os.path.exists(metadata_path):
+                import json
+                with open(metadata_path, 'r') as f:
+                    self.model_metadata = json.load(f)
+                print(f"✓ Loaded metadata: {metadata_path}")
+            
+            return True
+            
+        except Exception as e:
+            print(f"⚠️ Error loading model: {e}")
+            return self._create_fallback_model()
+    
+    def _create_fallback_model(self):
+        """Create a simple fallback model for demo purposes when trained model is not available."""
+        print("🔧 Creating fallback model for cloud deployment...")
         
-        # Load model
-        model_path = os.path.join(self.model_dir, f"{model_name}.joblib")
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model not found: {model_path}")
+        # Create a simple rule-based model
+        class FallbackModel:
+            def predict(self, features):
+                """Simple rule-based prediction."""
+                if hasattr(features, 'shape') and len(features.shape) > 1:
+                    predictions = []
+                    for i in range(features.shape[0]):
+                        # Simple rule-based scoring
+                        score = np.mean(features[i]) if features[i].sum() > 0 else 0.1
+                        predictions.append(min(score, 1.0))
+                    return np.array(predictions)
+                else:
+                    return np.array([0.3])  # Default low risk
+            
+            def predict_proba(self, features):
+                """Return probabilities for fallback model."""
+                predictions = self.predict(features)
+                # Convert to probability matrix [legit_prob, phishing_prob]
+                result = np.column_stack([1 - predictions, predictions])
+                return result
         
-        self.model = joblib.load(model_path)
-        print(f"✓ Loaded model: {model_path}")
+        self.model = FallbackModel()
+        self.feature_extractor = None  # Will use legacy features
+        self.model_metadata = {
+            "model_type": "fallback",
+            "description": "Simple rule-based fallback model for cloud deployment"
+        }
         
-        # Load feature extractor
-        feature_extractor_path = os.path.join(self.model_dir, f"{model_name}_feature_extractor.joblib")
-        if os.path.exists(feature_extractor_path):
-            self.feature_extractor = joblib.load(feature_extractor_path)
-            print(f"✓ Loaded feature extractor: {feature_extractor_path}")
-        else:
-            print(f"⚠ Feature extractor not found: {feature_extractor_path}")
-        
-        # Load metadata
-        metadata_path = os.path.join(self.model_dir, f"{model_name}_metadata.json")
-        if os.path.exists(metadata_path):
-            import json
-            with open(metadata_path, 'r') as f:
-                self.model_metadata = json.load(f)
-            print(f"✓ Loaded metadata: {metadata_path}")
-        
+        print("✅ Fallback model created successfully")
         return True
     
     def predict(self, texts, return_proba=True):

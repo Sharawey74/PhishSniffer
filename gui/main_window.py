@@ -10,19 +10,45 @@ import plotly.graph_objects as go
 from datetime import datetime
 import os
 import sys
+import warnings
+warnings.filterwarnings('ignore')
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from model.predict import PhishingPredictor
-from storage.history import load_analysis_history, update_analysis_history
-from storage.urls import load_suspicious_urls, save_suspicious_urls
+# Cloud deployment initialization
+try:
+    from setup_cloud import initialize_for_cloud
+    initialize_for_cloud()
+except Exception as e:
+    print(f"⚠️ Cloud setup warning: {e}")
+
+# Import components with error handling
+try:
+    from model.predict import PhishingPredictor
+    from storage.history import load_analysis_history, update_analysis_history
+    from storage.urls import load_suspicious_urls, save_suspicious_urls
+    MODEL_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ Import warning: {e}")
+    MODEL_AVAILABLE = False
 
 class PhishingDetectorApp:
     """Main Streamlit application class."""
     
     def __init__(self):
-        self.predictor = PhishingPredictor()
+        if MODEL_AVAILABLE:
+            try:
+                self.predictor = PhishingPredictor()
+                self.predictor.load_model()  # Try to load model
+            except Exception as e:
+                st.warning(f"⚠️ Model loading issue: {e}")
+                self.predictor = PhishingPredictor()
+                self.predictor._create_fallback_model()
+        else:
+            st.error("❌ Model components not available. Running in limited mode.")
+            self.predictor = None
+            
         self.history_file = "data/analysis_history.json"
         self.urls_file = "data/suspicious_urls.json"
         

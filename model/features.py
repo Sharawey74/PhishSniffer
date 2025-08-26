@@ -1,23 +1,5 @@
 """
-Feature extraction for        self.tfidf_vectorizer = TfidfVectorizer(
-            max_features=max_features,
-            ngram_range=ngram_range,
-            min_df=1,  # Changed from min_df to avoid pruning all terms
-            max_df=max_df,
-            stop_words='english',
-            lowercase=True,
-            strip_accents='unicode'
-        )
-        
-        self.count_vectorizer = CountVectorizer(
-            max_features=max_features,
-            ngram_range=ngram_range,
-            min_df=1,  # Changed from min_df to avoid pruning all terms
-            max_df=max_df,
-            stop_words='english',
-            lowercase=True,
-            strip_accents='unicode'
-        )ection.
+Feature extraction for email classification.
 Extracts TF-IDF features, n-grams, and email-specific features.
 """
 
@@ -28,10 +10,27 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.pipeline import Pipeline
-import nltk
-from nltk.corpus import stopwords
 import warnings
 warnings.filterwarnings('ignore')
+
+# Handle NLTK import gracefully for cloud deployment
+try:
+    import nltk
+    from nltk.corpus import stopwords
+    NLTK_AVAILABLE = True
+    
+    # Try to download stopwords if not available
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        try:
+            nltk.download('stopwords', quiet=True)
+        except Exception:
+            print("⚠️ Could not download NLTK stopwords, using built-in stop words")
+            NLTK_AVAILABLE = False
+except ImportError:
+    print("⚠️ NLTK not available, using built-in stop words")
+    NLTK_AVAILABLE = False
 
 class EmailFeatureExtractor:
     """Comprehensive feature extraction for email classification."""
