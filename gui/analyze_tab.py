@@ -38,6 +38,50 @@ def show_analyze_tab(app):
     email_content = ""
     
     if input_method == "Paste Email Content":
+        # Add custom CSS for full red glowing text
+        st.markdown("""
+        <style>
+        .stTextArea textarea::placeholder {
+            color: #ff0000 !important;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8),
+                         0 0 20px rgba(255, 0, 0, 0.6),
+                         0 0 30px rgba(255, 0, 0, 0.4);
+            animation: glowRed 2s ease-in-out infinite alternate;
+        }
+        
+        .stTextArea textarea {
+            color: #ff0000 !important;
+            font-weight: bold;
+            text-shadow: 0 0 12px rgba(255, 0, 0, 0.8),
+                         0 0 25px rgba(255, 0, 0, 0.6);
+            border: 2px solid rgba(255, 0, 0, 0.5) !important;
+            background: rgba(0, 0, 0, 0.85) !important;
+            transition: all 0.3s ease;
+        }
+        
+        .stTextArea textarea:focus {
+            border: 2px solid rgba(255, 0, 0, 1) !important;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8) !important;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 1),
+                         0 0 30px rgba(255, 0, 0, 0.8);
+        }
+        
+        @keyframes glowRed {
+            from {
+                text-shadow: 0 0 10px rgba(255, 0, 0, 0.7),
+                             0 0 20px rgba(255, 0, 0, 0.5),
+                             0 0 30px rgba(255, 0, 0, 0.3);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 0, 0, 1),
+                             0 0 35px rgba(255, 0, 0, 0.8),
+                             0 0 50px rgba(255, 0, 0, 0.6);
+            }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
         email_content = st.text_area(
             "Paste the email content here:",
             height=300,
