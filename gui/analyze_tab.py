@@ -38,7 +38,7 @@ def show_analyze_tab(app):
     email_content = ""
     
     if input_method == "Paste Email Content":
-        # Add custom CSS for dark themed email input without glowing effects
+        # Add custom CSS for dark themed email input without glowing effects - forced for all users
         st.markdown("""
         <style>
         .stTextArea textarea::placeholder {
@@ -61,6 +61,7 @@ def show_analyze_tab(app):
         }
         
         .stTextArea textarea:focus {
+            background: #2d3748 !important;
             border: 2px solid #3182ce !important;
             outline: none !important;
             box-shadow: none !important;
@@ -68,12 +69,24 @@ def show_analyze_tab(app):
         }
         
         .stTextArea textarea:hover {
+            background: #2d3748 !important;
             border: 2px solid #4a5568 !important;
             box-shadow: none !important;
         }
         
+        /* Force dark background for container in all themes */
         .stTextArea {
-            background: transparent !important;
+            background: #2d3748 !important;
+        }
+        
+        /* Override Streamlit's default light mode styles */
+        .stTextArea > div {
+            background: #2d3748 !important;
+        }
+        
+        /* Ensure dark background persists in all states and themes */
+        .stTextArea textarea[data-baseweb="textarea"] {
+            background: #2d3748 !important;
         }
         </style>
         """, unsafe_allow_html=True)
