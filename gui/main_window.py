@@ -13,6 +13,20 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
+# Configure Streamlit settings
+def setup_streamlit_config():
+    """Configure Streamlit with our custom settings."""
+    try:
+        # Try to set config programmatically
+        st.set_page_config(
+            page_title="PhishSniffer - Email Security Platform",
+            page_icon="🛡️",
+            layout="wide",
+            initial_sidebar_state="expanded"
+        )
+    except Exception as e:
+        print(f"⚠️ Streamlit config warning: {e}")
+
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -535,6 +549,9 @@ class PhishingDetectorApp:
 
 def main():
     """Main function to run the Streamlit app."""
+    # Setup Streamlit configuration
+    setup_streamlit_config()
+    
     app = PhishingDetectorApp()
     app.run()
 

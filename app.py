@@ -167,7 +167,7 @@ def launch_gui():
         # Start Streamlit in background
         process = subprocess.Popen([
             sys.executable, '-m', 'streamlit', 'run', 
-            'app_streamlit.py',
+            'streamlit_app.py',
             '--server.port=8501',
             '--server.address=localhost',
             '--server.headless=false'

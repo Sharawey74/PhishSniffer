@@ -1,0 +1,312 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
+#  project, it is generally recommended to not ignore the entire .idea/ directory but to
+#  select the files and directories to ignore.
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# Linux
+*~
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+# Project specific ignores
+# ======================
+
+# Trained models (can be large files)
+trained_models/*.joblib
+trained_models/*.pkl
+trained_models/*.h5
+trained_models/*.onnx
+
+# Keep metadata and directory structure
+!trained_models/README.md
+!trained_models/.gitkeep
+!trained_models/evaluation_plots/
+
+# Data files (often large and sensitive)
+data/*.csv
+data/*.json
+data/*.xlsx
+data/*.txt
+
+# Keep essential config files
+!data/settings.json
+!data/analysis_history.json
+!data/suspicious_urls.json
+
+# Processed/cleaned data (can be regenerated)
+cleaned_data/*.csv
+cleaned_data/*.json
+
+# Keep directory structure
+!cleaned_data/README.md
+!cleaned_data/.gitkeep
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+debug_*.json
+error_*.txt
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# IDE and editor files
+*.swp
+*.swo
+*~
+.project
+.metadata
+.settings/
+.buildpath
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Deployment specific
+deployment.log
+deploy.sh
+
+# Performance and profiling
+*.prof
+*.profile
+
+# Documentation builds
+docs/build/
+docs/_build/
+
+# Coverage reports
+coverage/
+.coverage.*
+
+# Large files that should be tracked with Git LFS
+*.bin
+*.model
+*.weights
+
+# Temporary directories
+tmp/
+temp/
+cache/
+
+# User specific settings
+user_settings.json
+personal_config.json
+
+# Email content samples (privacy)
+sample_emails/
+test_emails/
+email_samples/
+
+# API keys and secrets
+secrets/
+keys/
+certificates/
+
+# Feedback and user data
+feedback/
+user_data/
+analytics/
+
+# System files
+*.pid
+*.lock
+.nfs*
+
+# Virtual environments
+phishsniffer_env/
+phish_env/
+venv_phish/
+
+# Package builds
+build/
+dist/
+*.egg-info/

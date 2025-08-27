@@ -13,6 +13,14 @@ warnings.filterwarnings('ignore')
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
+# Set Streamlit config path to gui folder
+gui_dir = os.path.join(current_dir, 'gui')
+streamlit_config_dir = os.path.join(gui_dir, '.streamlit')
+
+# Set environment variable for Streamlit config
+if os.path.exists(streamlit_config_dir):
+    os.environ['STREAMLIT_CONFIG_DIR'] = streamlit_config_dir
+
 # Cloud deployment setup
 print("🚀 Initializing PhishSniffer for Streamlit Cloud...")
 
