@@ -705,5 +705,5 @@ Computer Science
 
 ---
 
-*Last Updated: August , 2025*  
+*Last Updated: August 2025*  
 *Version: 2.0.0*  
